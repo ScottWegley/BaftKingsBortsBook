@@ -15,14 +15,19 @@ from config import get_config
 class Marble:
     """Physics object representing a marble with position, velocity, and collision behavior"""
     
-    def __init__(self, x: float, y: float, radius: float, color: Tuple[int, int, int], speed: float):
+    def __init__(self, x: float, y: float, radius: float, color: Tuple[int, int, int], speed: float, initial_angle: float = None):
         self.x = x
         self.y = y
         self.radius = radius
         self.color = color
         self.speed = speed
-          # Random direction (angle in radians)
-        angle = rng.uniform(0, 2 * math.pi)
+        
+        # Use provided angle or generate random direction
+        if initial_angle is not None:
+            angle = initial_angle
+        else:
+            angle = rng.uniform(0, 2 * math.pi)
+            
         self.velocity_x = math.cos(angle) * speed
         self.velocity_y = math.sin(angle) * speed
     

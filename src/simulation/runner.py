@@ -82,7 +82,6 @@ def run_headless_mode(num_marbles: int = None, terrain_complexity: float = None,
         simulation.update(dt)
         frames += 1
         
-        # Print progress every second
         progress_interval = cfg.simulation.HEADLESS_PROGRESS_INTERVAL
         if frames % progress_interval == 0:
             print(f"Simulation time: {simulation.simulation_time:.1f}s")
