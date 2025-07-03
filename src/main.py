@@ -61,26 +61,22 @@ def main():
         print("Error: Terrain complexity must be between 0.0 and 1.0")
         sys.exit(1)
 
-    # Validate arena dimensions
-    if args.arena_width < 200 or args.arena_height < 200:
+    # Validate arena dimensions    if args.arena_width < 200 or args.arena_height < 200:
         print("Error: Arena dimensions must be at least 200x200 pixels")
         sys.exit(1)
     
+    # Set runtime configuration instead of passing parameters around
+    cfg.simulation.set_runtime_parameters(
+        num_marbles=args.marbles,
+        arena_width=args.arena_width,
+        arena_height=args.arena_height,
+        terrain_complexity=args.terrain_complexity
+    )    
     try:
         if args.headless:
-            run_headless_mode(
-                num_marbles=args.marbles, 
-                terrain_complexity=args.terrain_complexity,
-                arena_width=args.arena_width,
-                arena_height=args.arena_height
-            )
+            run_headless_mode()
         else:
-            run_graphics_mode(
-                num_marbles=args.marbles, 
-                terrain_complexity=args.terrain_complexity,
-                arena_width=args.arena_width,
-                arena_height=args.arena_height
-            )
+            run_graphics_mode()
     
     except KeyboardInterrupt:
         print("\nSimulation interrupted by user")

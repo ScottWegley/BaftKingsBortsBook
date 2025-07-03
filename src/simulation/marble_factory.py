@@ -2,10 +2,6 @@
 Marble factory for creating and positioning marbles in the simulation.
 """
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 import math
 from typing import List, Tuple
 import rng

@@ -2,10 +2,6 @@
 Main terrain generator orchestrating the terrain creation process.
 """
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 from typing import List, Tuple
 import rng
 from config import get_config

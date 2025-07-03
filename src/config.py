@@ -27,11 +27,43 @@ class SimulationConfig:
     FIXED_TIMESTEP = 1.0 / 60.0  # 60 FPS for headless mode
     GRAPHICS_FPS = 30  # Frames per second for graphics mode
     
+    # Runtime overrides (set by command line arguments)
+    _runtime_num_marbles = None
+    _runtime_arena_width = None
+    _runtime_arena_height = None
+    _runtime_terrain_complexity = None
+    
+    @property
+    def NUM_MARBLES(self):
+        return self._runtime_num_marbles or self.DEFAULT_NUM_MARBLES
+    
+    @property 
+    def ARENA_WIDTH(self):
+        return self._runtime_arena_width or TerrainConfig.DEFAULT_ARENA_WIDTH
+        
+    @property
+    def ARENA_HEIGHT(self):
+        return self._runtime_arena_height or TerrainConfig.DEFAULT_ARENA_HEIGHT
+        
+    @property
+    def TERRAIN_COMPLEXITY(self):
+        return self._runtime_terrain_complexity or TerrainConfig.DEFAULT_TERRAIN_COMPLEXITY
+    
+    def set_runtime_parameters(self, num_marbles=None, arena_width=None, arena_height=None, terrain_complexity=None):
+        """Set runtime configuration overrides"""
+        if num_marbles is not None:
+            self._runtime_num_marbles = num_marbles
+        if arena_width is not None:
+            self._runtime_arena_width = arena_width
+        if arena_height is not None:
+            self._runtime_arena_height = arena_height
+        if terrain_complexity is not None:
+            self._runtime_terrain_complexity = terrain_complexity
+
     # Marble physics
     MARBLE_RADIUS = 15
     MARBLE_SPEED = 250  # pixels per second
     COLLISION_RESTITUTION = 1.0  # Elastic collisions
-    TERRAIN_PUSH_BUFFER = 2  # Extra push distance for terrain collisions (legacy)
     MARBLE_PLACEMENT_BUFFER = 5  # Buffer between marbles and obstacles
     
     # Smooth terrain collision parameters
@@ -103,14 +135,12 @@ class RenderingConfig:
     SHOW_FPS = True
     FPS_COLOR = (0, 0, 0)  # Black text
     FPS_POSITION = (10, 10)
-    
-    # Marble rendering
+      # Marble rendering
     MARBLE_BORDER_WIDTH = 0  # No border by default
     MARBLE_BORDER_COLOR = (0, 0, 0)  # Black border if enabled
     
     # Terrain rendering
     TERRAIN_ALPHA = 255  # Fully opaque
-    FLOWING_TERRAIN_WIREFRAME = False  # Whether to show flowing terrain as wireframe
 
 
 # =============================================================================

@@ -3,11 +3,7 @@ Main simulation manager that orchestrates all simulation components.
 """
 
 from typing import List, Optional, Tuple
-import sys
-import os
 import math
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 from config import get_config
 from terrain import FlowingTerrainGenerator
 from physics import Marble, CollisionDetector
@@ -18,32 +14,32 @@ from .marble_factory import MarbleFactory
 class SimulationManager:
     """Manages the entire marble simulation including marbles, terrain, and physics"""
     
-    def __init__(self, num_marbles: int = None, arena_width: int = None, arena_height: int = None, 
-                 terrain_complexity: float = None, game_mode: str = None):
+    def __init__(self, game_mode: str = None):
         cfg = get_config()
         
-        # Use config defaults if parameters not specified
-        self.num_marbles = num_marbles if num_marbles is not None else cfg.simulation.DEFAULT_NUM_MARBLES
-        self.arena_width = arena_width if arena_width is not None else cfg.terrain.DEFAULT_ARENA_WIDTH
-        self.arena_height = arena_height if arena_height is not None else cfg.terrain.DEFAULT_ARENA_HEIGHT
+        # Read all parameters from config (including runtime overrides)
+        self.num_marbles = cfg.simulation.NUM_MARBLES
+        self.arena_width = cfg.simulation.ARENA_WIDTH
+        self.arena_height = cfg.simulation.ARENA_HEIGHT
         self.marble_radius = cfg.simulation.MARBLE_RADIUS
         self.marble_speed = cfg.simulation.MARBLE_SPEED
         
         # Terrain settings
-        terrain_complexity = terrain_complexity if terrain_complexity is not None else cfg.terrain.DEFAULT_TERRAIN_COMPLEXITY
-        self.game_mode = game_mode if game_mode is not None else cfg.simulation.DEFAULT_GAME_MODE
+        self.terrain_complexity = cfg.simulation.TERRAIN_COMPLEXITY
+        self.game_mode = game_mode or cfg.simulation.DEFAULT_GAME_MODE
         
         self.simulation_time = 0.0
         self.game_finished = False
-        self.winner_marble_id: Optional[int] = None
-          # Initialize game mode handler
+        self.winner_marble_id = None
+        
+        # Initialize game mode handler
         if self.game_mode == "indiv_race":
             self.game_mode_handler = game_modes.IndivRaceGameMode(self.arena_width, self.arena_height)
         else:
             raise ValueError(f"Unsupported game mode: {self.game_mode}")
         
         # Generate terrain with validation
-        self._generate_valid_terrain(terrain_complexity)
+        self._generate_valid_terrain(self.terrain_complexity)
         
         # Generate distinct colors for each marble
         self.colors = MarbleFactory.generate_colors(self.num_marbles)        

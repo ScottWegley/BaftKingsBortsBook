@@ -2,10 +2,6 @@
 Simulation runner functions for graphics and headless modes.
 """
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 import pygame
 import time
 from config import get_config
@@ -13,66 +9,55 @@ from rendering import GraphicsRenderer
 from .manager import SimulationManager
 
 
-def run_graphics_mode(num_marbles: int = None, terrain_complexity: float = None, 
-                     arena_width: int = None, arena_height: int = None):
-    """Run simulation with graphics"""
-    cfg = get_config()    # Use config defaults if not specified
-    num_marbles = num_marbles if num_marbles is not None else cfg.simulation.DEFAULT_NUM_MARBLES
-    terrain_complexity = terrain_complexity if terrain_complexity is not None else cfg.terrain.DEFAULT_TERRAIN_COMPLEXITY
-    arena_width = arena_width if arena_width is not None else cfg.terrain.DEFAULT_ARENA_WIDTH
-    arena_height = arena_height if arena_height is not None else cfg.terrain.DEFAULT_ARENA_HEIGHT
-    
-    print(f"Starting marble simulation with {num_marbles} marbles (Graphics Mode)")
+def _print_simulation_info(mode_name: str, extra_info: str = ""):
+    """Helper function to print simulation information"""
+    cfg = get_config()
+    print(f"Starting marble simulation with {cfg.simulation.NUM_MARBLES} marbles ({mode_name})")
     print(f"Game Mode: {cfg.current_game_mode} (Endless)")
-    print(f"Arena: {arena_width}x{arena_height}, Terrain complexity: {terrain_complexity:.2f}")
-    print("Press ESC or close window to exit early")
+    print(f"Arena: {cfg.simulation.ARENA_WIDTH}x{cfg.simulation.ARENA_HEIGHT}, Terrain complexity: {cfg.simulation.TERRAIN_COMPLEXITY:.2f}")
+    if extra_info:
+        print(extra_info)
+
+
+def run_graphics_mode():
+    """Run simulation with graphics"""
+    _print_simulation_info("Graphics Mode", "Press ESC or close window to exit early")
     
-    simulation = SimulationManager(
-        num_marbles=num_marbles, 
-        terrain_complexity=terrain_complexity,
-        arena_width=arena_width,
-        arena_height=arena_height
-    )
+    simulation = SimulationManager()
     renderer = GraphicsRenderer(simulation)
     
+    cfg = get_config()
     running = True
+    # Use fixed timestep for simulation consistency, separate from rendering frame rate
+    fixed_dt = cfg.simulation.FIXED_TIMESTEP
+    accumulator = 0.0
+    
     while running and not simulation.is_finished():
-        dt = renderer.get_dt()
+        frame_dt = renderer.get_dt()
+        accumulator += frame_dt
         
         # Handle events
         running = renderer.handle_events()
         
-        # Update simulation
-        simulation.update(dt)
-          # Render
+        # Update simulation with fixed timestep (may run multiple times per frame)
+        while accumulator >= fixed_dt:
+            simulation.update(fixed_dt)
+            accumulator -= fixed_dt
+        
+        # Render at display frame rate
         renderer.render()
     
     pygame.quit()
     print(f"Simulation ended after {simulation.simulation_time:.2f} seconds")
 
 
-def run_headless_mode(num_marbles: int = None, terrain_complexity: float = None,
-                     arena_width: int = None, arena_height: int = None):
+def run_headless_mode():
     """Run simulation without graphics"""
+    _print_simulation_info("Headless Mode")
+    
+    simulation = SimulationManager()
+    
     cfg = get_config()
-    
-    # Use config defaults if not specified
-    num_marbles = num_marbles if num_marbles is not None else cfg.simulation.DEFAULT_NUM_MARBLES
-    terrain_complexity = terrain_complexity if terrain_complexity is not None else cfg.terrain.DEFAULT_TERRAIN_COMPLEXITY
-    arena_width = arena_width if arena_width is not None else cfg.terrain.DEFAULT_ARENA_WIDTH
-    arena_height = arena_height if arena_height is not None else cfg.terrain.DEFAULT_ARENA_HEIGHT
-    
-    print(f"Starting marble simulation with {num_marbles} marbles (Headless Mode)")
-    print(f"Game Mode: {cfg.current_game_mode} (Endless)")
-    print(f"Arena: {arena_width}x{arena_height}, Terrain complexity: {terrain_complexity:.2f}")
-    
-    simulation = SimulationManager(
-        num_marbles=num_marbles, 
-        terrain_complexity=terrain_complexity,
-        arena_width=arena_width,
-        arena_height=arena_height
-    )
-    
     # Fixed timestep for consistent simulation  
     dt = cfg.simulation.FIXED_TIMESTEP
     frames = 0

@@ -8,10 +8,6 @@ for different game modes like individual races, team races, etc.
 from typing import List, Tuple, Optional, Set
 from enum import Enum
 import math
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 from config import get_config
 from terrain.obstacle import FlowingTerrainObstacle
 import rng

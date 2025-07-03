@@ -2,10 +2,6 @@
 Graphics rendering for the marble race simulation.
 """
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 import pygame
 from typing import TYPE_CHECKING
 from config import get_config

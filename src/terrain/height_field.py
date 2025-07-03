@@ -3,10 +3,6 @@ Height field generation for flowing terrain.
 This module handles the mathematical generation of terrain height maps.
 """
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 import math
 from typing import List, Tuple
 import rng
