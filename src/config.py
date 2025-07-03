@@ -155,6 +155,10 @@ class IndivRaceSimulationConfig(SimulationConfig):
 class IndivRaceTerrainConfig(TerrainConfig):
     """Terrain config for individual race mode"""
     
+    # Zone placement parameters
+    MIN_SPAWN_GOAL_DISTANCE_FACTOR = 0.25  # Minimum distance as fraction of arena diagonal
+    ZONE_SEPARATION_BUFFER = 100  # Additional buffer distance in pixels
+    
 
 
 class IndivRaceRenderingConfig(RenderingConfig):
