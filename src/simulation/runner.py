@@ -11,6 +11,7 @@ from config import get_config
 from rendering import GraphicsRenderer
 from .manager import SimulationManager
 from rng import get_current_seed
+from enum import Enum
 
 
 def _save_simulation_results(args, simulation_time: float, winner_marble_id: int):
@@ -32,7 +33,10 @@ def _save_simulation_results(args, simulation_time: float, winner_marble_id: int
     # Collect command line arguments
     cmd_args = {}
     for arg_name, arg_value in vars(args).items():
-        cmd_args[arg_name] = arg_value
+        if isinstance(arg_value, Enum):
+            cmd_args[arg_name] = arg_value.value
+        else:
+            cmd_args[arg_name] = arg_value
     
     # Create results data
     results = {
@@ -145,7 +149,10 @@ def _save_simulation_results(args, simulation_time: float, winner_marble_id: int
     # Collect command line arguments
     cmd_args = {}
     for arg_name, arg_value in vars(args).items():
-        cmd_args[arg_name] = arg_value
+        if isinstance(arg_value, Enum):
+            cmd_args[arg_name] = arg_value.value
+        else:
+            cmd_args[arg_name] = arg_value
     
     # Create results data
     results = {
