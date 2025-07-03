@@ -1,0 +1,126 @@
+"""
+Main simulation manager that orchestrates all simulation components.
+"""
+
+from typing import List, Optional, Tuple
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+from config import get_config
+from terrain import FlowingTerrainGenerator
+from physics import Marble, CollisionDetector
+from game_modes import IndivRaceGameMode, GameResult
+from .marble_factory import MarbleFactory
+
+
+class SimulationManager:
+    """Manages the entire marble simulation including marbles, terrain, and physics"""
+    
+    def __init__(self, num_marbles: int = None, arena_width: int = None, arena_height: int = None, 
+                 terrain_complexity: float = None, game_mode: str = None):
+        cfg = get_config()
+        
+        # Use config defaults if parameters not specified
+        self.num_marbles = num_marbles if num_marbles is not None else cfg.simulation.DEFAULT_NUM_MARBLES
+        self.arena_width = arena_width if arena_width is not None else cfg.terrain.DEFAULT_ARENA_WIDTH
+        self.arena_height = arena_height if arena_height is not None else cfg.terrain.DEFAULT_ARENA_HEIGHT
+        self.marble_radius = cfg.simulation.MARBLE_RADIUS
+        self.marble_speed = cfg.simulation.MARBLE_SPEED
+        
+        # Terrain settings
+        terrain_complexity = terrain_complexity if terrain_complexity is not None else cfg.terrain.DEFAULT_TERRAIN_COMPLEXITY
+        self.game_mode = game_mode if game_mode is not None else cfg.simulation.DEFAULT_GAME_MODE
+        
+        self.simulation_time = 0.0
+        self.game_finished = False
+        self.winner_marble_id: Optional[int] = None
+        
+        # Initialize game mode handler
+        if self.game_mode == "indiv_race":
+            self.game_mode_handler = IndivRaceGameMode(self.arena_width, self.arena_height)
+        else:
+            raise ValueError(f"Unsupported game mode: {self.game_mode}")
+        
+        # Generate terrain with validation
+        self._generate_valid_terrain(terrain_complexity)
+        
+        # Generate distinct colors for each marble
+        self.colors = MarbleFactory.generate_colors(self.num_marbles)
+        
+        # Initialize marbles using game mode specific spawn positions
+        self._initialize_marbles()
+    
+    def _generate_valid_terrain(self, terrain_complexity: float, max_attempts: int = 10):
+        """Generate terrain that meets game mode requirements"""
+        self.terrain_generator = FlowingTerrainGenerator(self.arena_width, self.arena_height)
+        
+        for attempt in range(max_attempts):
+            # Generate terrain
+            self.terrain_obstacles = self.terrain_generator.generate_terrain(terrain_complexity)
+            
+            # Validate terrain for game mode
+            if self.game_mode_handler.validate_and_setup_terrain(self.terrain_obstacles):
+                print(f"Valid terrain generated on attempt {attempt + 1}")
+                return
+            
+            print(f"Terrain attempt {attempt + 1} failed validation, regenerating...")
+        
+        # If we get here, we couldn't generate valid terrain
+        raise RuntimeError(f"Could not generate valid terrain for {self.game_mode} mode after {max_attempts} attempts")
+    
+    def _initialize_marbles(self):
+        """Initialize marbles using game mode specific positioning"""
+        if self.game_mode == "indiv_race":
+            # Get spawn positions from game mode handler
+            spawn_positions = self.game_mode_handler.get_spawn_positions(self.num_marbles, self.marble_radius)            # Create marbles at spawn positions
+            self.marbles: List[Marble] = []
+            for i, (x, y) in enumerate(spawn_positions):
+                marble = Marble(x, y, self.marble_radius, self.colors[i], self.marble_speed)
+                self.marbles.append(marble)
+        else:
+            # Fallback to old method for other modes
+            self.marbles: List[Marble] = MarbleFactory.create_marbles(
+                self.num_marbles, self.marble_radius, self.marble_speed,
+                self.arena_width, self.arena_height, self.terrain_obstacles, self.colors
+            )
+    
+    def update(self, dt: float):
+        """Update simulation state"""
+        if self.game_finished:
+            return
+            
+        self.simulation_time += dt
+        
+        # Update all marble positions and boundary collisions
+        for marble in self.marbles:
+            marble.update(dt, self.arena_width, self.arena_height)
+        
+        # Handle all terrain collisions centrally
+        CollisionDetector.detect_and_resolve_terrain_collisions(
+            self.marbles, self.terrain_obstacles, self.arena_width, self.arena_height
+        )
+        
+        # Handle marble-to-marble collisions
+        CollisionDetector.detect_and_resolve_marble_collisions(self.marbles)
+        
+        # Check win condition
+        result, winner_id = self.game_mode_handler.check_win_condition(self.marbles)
+        if result == GameResult.WINNER:
+            self.game_finished = True
+            self.winner_marble_id = winner_id
+            print(f"Marble {winner_id} wins the race!")
+    
+    def is_finished(self) -> bool:
+        """Check if simulation should end"""
+        return self.game_finished
+    
+    def get_winner(self) -> Optional[int]:
+        """Get the winner marble ID if game is finished"""
+        return self.winner_marble_id
+    
+    def get_zones(self) -> Tuple:
+        """Get game mode zones for rendering"""
+        if hasattr(self.game_mode_handler, 'get_zones'):
+            return self.game_mode_handler.get_zones()
+        return None, None
