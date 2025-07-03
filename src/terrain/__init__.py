@@ -6,7 +6,6 @@ including procedural generation, height fields, and terrain obstacles.
 """
 
 from .generator import FlowingTerrainGenerator
-from .height_field import SimpleFlowField
 from .obstacle import FlowingTerrainObstacle
 
-__all__ = ['FlowingTerrainGenerator', 'SimpleFlowField', 'FlowingTerrainObstacle']
+__all__ = ['FlowingTerrainGenerator', 'FlowingTerrainObstacle']

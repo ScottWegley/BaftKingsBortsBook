@@ -5,7 +5,7 @@ Main terrain generator orchestrating the terrain creation process.
 from typing import List, Tuple
 import rng
 from config import get_config
-from .height_field import SimpleFlowField
+from .height_field import AdvancedFlowField
 from .obstacle import FlowingTerrainObstacle
 
 
@@ -58,7 +58,7 @@ class FlowingTerrainGenerator:
     def generate_terrain(self, complexity: float = 0.5) -> List:
         """Generate flowing terrain with solid border and advanced cleanup, favoring continuous open space"""
         cfg = get_config()
-        flow_field = SimpleFlowField(self.width, self.height)
+        flow_field = AdvancedFlowField(self.width, self.height)
         flow_field.generate_base_terrain(complexity * 0.7)
         flow_field.create_flowing_channels_smooth(complexity)
         flow_field.apply_border_fade(cfg.terrain.BORDER_FADE_DISTANCE)

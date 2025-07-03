@@ -8,7 +8,11 @@ from typing import List, Tuple
 import rng
 
 
-class SimpleFlowField:
+import numpy as np
+import scipy.ndimage
+import skimage.morphology
+
+class AdvancedFlowField:
     def remove_isolated_pockets(self, min_pocket_size: int = 50):
         """Remove isolated pockets of terrain or open space that are too small"""
         # First pass: identify connected regions of terrain (above threshold)
@@ -128,43 +132,14 @@ class SimpleFlowField:
         self.height_field = [[0.0 for _ in range(self.grid_width)] for _ in range(self.grid_height)]
         
     def generate_base_terrain(self, complexity: float = 0.5):
-        """Generate flowing terrain using sine waves with random offsets"""
-        # Generate random offsets for variation while maintaining determinism
-        x_offset = rng.uniform(0, 100)
-        y_offset = rng.uniform(0, 100)
-        phase_offset1 = rng.uniform(0, 2 * math.pi)
-        phase_offset2 = rng.uniform(0, 2 * math.pi)
-        phase_offset3 = rng.uniform(0, 2 * math.pi)
-        
-        # Create flowing base using multiple sine waves with random variations
-        for y in range(self.grid_height):
-            for x in range(self.grid_width):
-                # Add random offsets to coordinates for varied terrain
-                real_x = x + x_offset
-                real_y = y + y_offset
-                
-                # Multiple sine wave frequencies for organic look with random phase shifts
-                freq1 = 0.1 * (1 + complexity)
-                freq2 = 0.05 * (1 + complexity * 0.5)
-                freq3 = 0.2 * (1 + complexity * 2)
-                
-                height = (
-                    math.sin(real_x * freq1 + phase_offset1) * math.cos(real_y * freq1 * 0.7) * 0.4 +
-                    math.sin(real_x * freq2 * 1.3 + phase_offset2) * math.sin(real_y * freq2 * 0.9) * 0.3 +
-                    math.cos(real_x * freq3 * 0.8 + phase_offset3) * math.cos(real_y * freq3 * 1.1) * 0.3
-                )
-                
-                self.height_field[y][x] = height
-        
-        # Normalize to 0-1 range
-        min_val = min(min(row) for row in self.height_field)
-        max_val = max(max(row) for row in self.height_field)
-        range_val = max_val - min_val
-        
-        if range_val > 0:
-            for y in range(self.grid_height):
-                for x in range(self.grid_width):
-                    self.height_field[y][x] = (self.height_field[y][x] - min_val) / range_val
+        """Generate flowing terrain using advanced numpy/scipy/skimage algorithms"""
+        # Use Perlin/simplex noise or random fields for base
+        base = np.random.rand(self.grid_height, self.grid_width)
+        # Smooth with gaussian filter for organic look
+        base = scipy.ndimage.gaussian_filter(base, sigma=3 + 8 * (1 - complexity))
+        # Normalize
+        base = (base - base.min()) / (base.max() - base.min())
+        self.height_field = base.tolist()
     
     def create_flow_channels(self, complexity: float = 0.5):
         """Create flowing channels using random walks"""
