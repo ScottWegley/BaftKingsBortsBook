@@ -11,5 +11,6 @@
 *.tmp
 *.temp
 *~
+**/results/misc/**
  
 **/__pycache__/*

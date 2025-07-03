@@ -23,11 +23,13 @@ def main():
     parser.add_argument("--arena-width", type=int, default=cfg.terrain.DEFAULT_ARENA_WIDTH,
                        help=f"Arena width in pixels (default: {cfg.terrain.DEFAULT_ARENA_WIDTH})")
     parser.add_argument("--arena-height", type=int, default=cfg.terrain.DEFAULT_ARENA_HEIGHT,
-                       help=f"Arena height in pixels (default: {cfg.terrain.DEFAULT_ARENA_HEIGHT})")
+                       help=f"Arena height in pixels (default: {cfg.terrain.DEFAULT_ARENA_HEIGHT})")    
     parser.add_argument("--rng-mode", type=str, choices=["date", "random", "set"], 
                        default=cfg.rng.DEFAULT_RNG_MODE, help="RNG seed mode: 'date' uses current date, 'random' uses timestamp, 'set' uses --rng-value")
     parser.add_argument("--rng-value", type=int, 
                        help="Seed value to use when --rng-mode is 'set'")
+    parser.add_argument("--canon", action="store_true", 
+                       help="Save results to /results/canon instead of /results/misc")
     args = parser.parse_args()
     
     # Activate the selected game mode
@@ -55,13 +57,13 @@ def main():
     
     if args.marbles > 50:
         print("Warning: Large number of marbles may impact performance")
-    
-    # Validate terrain complexity
+      # Validate terrain complexity
     if args.terrain_complexity < 0.0 or args.terrain_complexity > 1.0:
         print("Error: Terrain complexity must be between 0.0 and 1.0")
         sys.exit(1)
 
-    # Validate arena dimensions    if args.arena_width < 200 or args.arena_height < 200:
+    # Validate arena dimensions
+    if args.arena_width < 200 or args.arena_height < 200:
         print("Error: Arena dimensions must be at least 200x200 pixels")
         sys.exit(1)
     
@@ -71,12 +73,13 @@ def main():
         arena_width=args.arena_width,
         arena_height=args.arena_height,
         terrain_complexity=args.terrain_complexity
-    )    
+    )
+    
     try:
         if args.headless:
-            run_headless_mode()
+            run_headless_mode(args)
         else:
-            run_graphics_mode()
+            run_graphics_mode(args)
     
     except KeyboardInterrupt:
         print("\nSimulation interrupted by user")
