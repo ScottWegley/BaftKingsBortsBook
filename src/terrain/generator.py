@@ -56,30 +56,29 @@ class FlowingTerrainGenerator:
         return (red, green, blue)
     
     def generate_terrain(self, complexity: float = 0.5) -> List:
-        """Generate flowing terrain with solid border and advanced cleanup, favoring continuous open space"""
+        """Generate only background and solid borders (no terrain obstacles)."""
         cfg = get_config()
-        flow_field = AdvancedFlowField(self.width, self.height)
-        flow_field.generate_base_terrain(complexity * 0.7)
-        flow_field.create_flowing_channels_smooth(complexity)
-        flow_field.apply_border_fade(cfg.terrain.BORDER_FADE_DISTANCE)
-        flow_field.add_solid_border(cfg.terrain.SOLID_BORDER_WIDTH)
-        flow_field.apply_erosion(cfg.terrain.EROSION_ITERATIONS)
-        flow_field.smooth_terrain_advanced(cfg.terrain.SMOOTHING_ITERATIONS, cfg.terrain.SMOOTHING_STRENGTH)
-        flow_field.apply_dilation(1)
-        flow_field.remove_small_terrain_pieces(cfg.terrain.MIN_TERRAIN_REGION_SIZE)
-        flow_field.smooth_terrain_advanced(2, 0.3)
-        # --- New: Promote continuous open space and remove isolated pockets ---
-        flow_field.promote_continuous_spaces()
-        flow_field.ensure_connectivity()
-        flow_field.remove_isolated_pockets(min_pocket_size=cfg.terrain.MIN_TERRAIN_REGION_SIZE)
-        # Add scattered terrain islands in large open areas
-        flow_field.add_scattered_terrain_islands(num_islands=rng.randint(2, 5))
-        # --- End new ---
-        scale_x = self.width / flow_field.grid_width
-        scale_y = self.height / flow_field.grid_height
-        threshold = 0.25 + complexity * 0.35
+        # Create a height field with all open space (0.0), only borders are solid (1.0)
+        grid_width = self.width // 8
+        grid_height = self.height // 8
+        height_field = [[0.0 for _ in range(grid_width)] for _ in range(grid_height)]
+        border_width_x = max(1, cfg.terrain.SOLID_BORDER_WIDTH // (self.width // grid_width))
+        border_width_y = max(1, cfg.terrain.SOLID_BORDER_WIDTH // (self.height // grid_height))
+        # Top and bottom borders
+        for y in range(min(border_width_y, grid_height)):
+            for x in range(grid_width):
+                height_field[y][x] = 1.0
+                height_field[grid_height - 1 - y][x] = 1.0
+        # Left and right borders
+        for x in range(min(border_width_x, grid_width)):
+            for y in range(grid_height):
+                height_field[y][x] = 1.0
+                height_field[y][grid_width - 1 - x] = 1.0
+        scale_x = self.width / grid_width
+        scale_y = self.height / grid_height
+        threshold = 0.5  # Only borders are solid
         self.terrain_obstacle = FlowingTerrainObstacle(
-            flow_field.height_field,
+            height_field,
             threshold,
             scale_x,
             scale_y,
