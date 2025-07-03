@@ -56,55 +56,35 @@ class FlowingTerrainGenerator:
         return (red, green, blue)
     
     def generate_terrain(self, complexity: float = 0.5) -> List:
-        """Generate flowing terrain with solid border and advanced cleanup"""
+        """Generate flowing terrain with solid border and advanced cleanup, favoring continuous open space"""
         cfg = get_config()
-          # Create flow field generator
         flow_field = SimpleFlowField(self.width, self.height)
-        
-        # Generate base terrain with reduced intensity for smoother result
         flow_field.generate_base_terrain(complexity * 0.7)
-        
-        # Create smooth flowing channels instead of random channels
         flow_field.create_flowing_channels_smooth(complexity)
-        
-        # Apply border fade first (before solid border)
         flow_field.apply_border_fade(cfg.terrain.BORDER_FADE_DISTANCE)
-        
-        # Add solid border
         flow_field.add_solid_border(cfg.terrain.SOLID_BORDER_WIDTH)
-        
-        # Apply erosion to remove small features
         flow_field.apply_erosion(cfg.terrain.EROSION_ITERATIONS)
-        
-        # Apply advanced smoothing multiple times
-        flow_field.smooth_terrain_advanced(
-            cfg.terrain.SMOOTHING_ITERATIONS, 
-            cfg.terrain.SMOOTHING_STRENGTH
-        )
-        
-        # Apply dilation to restore some bulk after erosion
+        flow_field.smooth_terrain_advanced(cfg.terrain.SMOOTHING_ITERATIONS, cfg.terrain.SMOOTHING_STRENGTH)
         flow_field.apply_dilation(1)
-        
-        # Remove small scattered pieces
         flow_field.remove_small_terrain_pieces(cfg.terrain.MIN_TERRAIN_REGION_SIZE)
-        
-        # Final light smoothing pass
         flow_field.smooth_terrain_advanced(2, 0.3)
-          # Create terrain obstacle
+        # --- New: Promote continuous open space and remove isolated pockets ---
+        flow_field.promote_continuous_spaces()
+        flow_field.ensure_connectivity()
+        flow_field.remove_isolated_pockets(min_pocket_size=cfg.terrain.MIN_TERRAIN_REGION_SIZE)
+        # Add scattered terrain islands in large open areas
+        flow_field.add_scattered_terrain_islands(num_islands=rng.randint(2, 5))
+        # --- End new ---
         scale_x = self.width / flow_field.grid_width
         scale_y = self.height / flow_field.grid_height
-        
-        # Adjust threshold based on complexity - more complex = more terrain
-        threshold = 0.25 + complexity * 0.35  # Slightly lower threshold for smoother edges
-        
+        threshold = 0.25 + complexity * 0.35
         self.terrain_obstacle = FlowingTerrainObstacle(
-            flow_field.height_field, 
-            threshold, 
-            scale_x, 
+            flow_field.height_field,
+            threshold,
+            scale_x,
             scale_y,
             self.base_color
         )
-        
         return [self.terrain_obstacle] if self.terrain_obstacle else []
     
     def get_obstacles(self) -> List:

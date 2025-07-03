@@ -143,3 +143,26 @@ class FlowingTerrainObstacle:
                         int(self.scale_y) + 1
                     )
                     pygame.draw.rect(screen, terrain_color, rect)
+    
+    def get_neighbors(self, point: Tuple[int, int]) -> List[Tuple[int, int]]:
+        """
+        Get valid neighboring points for pathfinding.
+        """
+        x, y = point
+        neighbors = []
+
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # Cardinal directions
+            neighbor_x = x + dx
+            neighbor_y = y + dy
+
+            if 0 <= neighbor_x < self.grid_width and 0 <= neighbor_y < self.grid_height:
+                if self.height_field[neighbor_y][neighbor_x] <= self.threshold:  # Passable terrain
+                    neighbors.append((neighbor_x, neighbor_y))
+
+        return neighbors
+
+    def get_cost(self, current: Tuple[int, int], neighbor: Tuple[int, int]) -> float:
+        """
+        Get movement cost between two points.
+        """
+        return 1.0  # Uniform cost for now

@@ -25,7 +25,7 @@ class SimulationConfig:
     DEFAULT_NUM_MARBLES = 8
     DEFAULT_GAME_MODE = "indiv_race"  # Default and only game mode for now
     FIXED_TIMESTEP = 1.0 / 60.0  # 60 FPS for headless mode
-    GRAPHICS_FPS = 30  # Frames per second for graphics mode
+    GRAPHICS_FPS = 240  # Frames per second for graphics mode
     
     # Runtime overrides (set by command line arguments)
     _runtime_num_marbles = None
@@ -62,7 +62,7 @@ class SimulationConfig:
 
     # Marble physics
     MARBLE_RADIUS = 15
-    MARBLE_SPEED = 250  # pixels per second
+    MARBLE_SPEED = 150  # pixels per second
     COLLISION_RESTITUTION = 1.0  # Elastic collisions
     MARBLE_PLACEMENT_BUFFER = 5  # Buffer between marbles and obstacles
     
@@ -89,39 +89,39 @@ class TerrainConfig:
     # Arena dimensions
     DEFAULT_ARENA_WIDTH = 1280
     DEFAULT_ARENA_HEIGHT = 960
-    DEFAULT_TERRAIN_COMPLEXITY = .375
+    DEFAULT_TERRAIN_COMPLEXITY = .35  # 0 full terrain, 1 minimal terrain
     
     # Flowing terrain parameters
     FLOW_GRID_SCALE = 8  # Divide arena dimensions by this for grid resolution
-    FLOW_HEIGHT_THRESHOLD = 0.3  # Height threshold for solid terrain
-    FLOW_SMOOTHING_ITERATIONS = 2
-    FLOW_GAUSSIAN_SIGMA = 1.0
+    FLOW_HEIGHT_THRESHOLD = 0.35  # Increase threshold to reduce small isolated features
+    FLOW_SMOOTHING_ITERATIONS = 3  # More smoothing to eliminate small holes
+    FLOW_GAUSSIAN_SIGMA = 1.2  # Increase sigma for better smoothing
     
-    # Sine wave parameters for flowing terrain
-    FLOW_FREQ1_BASE = 0.1
-    FLOW_FREQ2_BASE = 0.05
-    FLOW_FREQ3_BASE = 0.2
-    FLOW_AMPLITUDE1 = 0.4
-    FLOW_AMPLITUDE2 = 0.3
-    FLOW_AMPLITUDE3 = 0.3
+    # Sine wave parameters for flowing terrain - create cleaner terrain boundaries
+    FLOW_FREQ1_BASE = 0.08  # Lower frequency for larger, cleaner terrain masses
+    FLOW_FREQ2_BASE = 0.04  # Lower frequency for smoother variations
+    FLOW_FREQ3_BASE = 0.15  # Moderate frequency for some detail but not noise
+    FLOW_AMPLITUDE1 = 0.5   # Increase for more distinct terrain regions
+    FLOW_AMPLITUDE2 = 0.3   # Keep moderate
+    FLOW_AMPLITUDE3 = 0.2   # Reduce to avoid creating small holes
     
     # Channel generation parameters
-    CHANNEL_WIDTH_MIN = 40
-    CHANNEL_WIDTH_MAX = 100
-    CHANNEL_DEPTH = 0.5
-    CHANNEL_SMOOTHNESS = 20
-    NUM_CHANNELS_BASE = 2
+    CHANNEL_WIDTH_MIN = 50  # Wider channels to create cleaner open spaces
+    CHANNEL_WIDTH_MAX = 120
+    CHANNEL_DEPTH = 0.6     # Deeper channels for cleaner separation
+    CHANNEL_SMOOTHNESS = 25 # More smoothing for channels
+    NUM_CHANNELS_BASE = 3   # Add more channels for better separation
     
     # Border and cleanup parameters
     SOLID_BORDER_WIDTH = 30  # Width of solid border in pixels
-    MIN_TERRAIN_REGION_SIZE = 200  # Minimum size of terrain regions to keep (increased)
-    NOISE_REDUCTION_THRESHOLD = 0.05  # Remove terrain features below this size (more aggressive)
-    BORDER_FADE_DISTANCE = 15  # Distance over which border fades in
+    MIN_TERRAIN_REGION_SIZE = 300  # Increase to eliminate small terrain patches
+    NOISE_REDUCTION_THRESHOLD = 0.08  # More aggressive noise reduction
+    BORDER_FADE_DISTANCE = 20  # Larger fade distance for smoother edges
     
     # Smoothing parameters for flowing terrain
-    SMOOTHING_ITERATIONS = 4  # Number of smoothing passes (increased)
-    SMOOTHING_STRENGTH = 0.8  # How much smoothing to apply (0.0-1.0)
-    EROSION_ITERATIONS = 4  # Number of erosion passes to remove small features
+    SMOOTHING_ITERATIONS = 5  # More smoothing to eliminate holes and rough edges
+    SMOOTHING_STRENGTH = 0.8  # Higher strength for cleaner terrain
+    EROSION_ITERATIONS = 3  # More erosion to clean up small features
 
 
 class RenderingConfig:

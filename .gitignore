@@ -12,5 +12,6 @@
 *.temp
 *~
 **/results/misc/**
+**/assets/terrain_tests/**
  
 **/__pycache__/*

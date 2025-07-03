@@ -46,7 +46,7 @@ class SimulationManager:
         # Initialize marbles using game mode specific spawn positions
         self._initialize_marbles()
     
-    def _generate_valid_terrain(self, terrain_complexity: float, max_attempts: int = 10):
+    def _generate_valid_terrain(self, terrain_complexity: float, max_attempts: int = 50):
         """Generate terrain that meets game mode requirements"""
         self.terrain_generator = FlowingTerrainGenerator(self.arena_width, self.arena_height)
         
