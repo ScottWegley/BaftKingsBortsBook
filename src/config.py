@@ -71,13 +71,13 @@ class SimulationConfig:
     SEPARATION_BUFFER = 5  # Minimum distance between marbles
     
     # Collision system configuration
-    COLLISION_POSITION_TOLERANCE = 1e-4  # Minimum distance to consider objects separated
-    COLLISION_MAX_SEPARATION_ITERATIONS = 8  # Maximum attempts to separate overlapping objects
-    COLLISION_VELOCITY_DAMPING = 0.995  # Slight velocity damping to prevent energy buildup (closer to 1.0 = less damping)
-    COLLISION_SEPARATION_FACTOR = 0.8  # Factor for marble separation (lower = gentler separation)
-    COLLISION_MAX_PASSES = 2  # Maximum collision resolution passes per frame
+    COLLISION_POSITION_TOLERANCE = 0.1  # Minimum distance to consider objects separated (increased for stability)
+    COLLISION_MAX_SEPARATION_ITERATIONS = 4  # Maximum attempts to separate overlapping objects (reduced to avoid jitter)
+    COLLISION_VELOCITY_DAMPING = 0.999  # Slight velocity damping to prevent energy buildup (closer to 1.0 = less damping)
+    COLLISION_SEPARATION_FACTOR = 1.0  # Factor for marble separation (1.0 = full separation)
+    COLLISION_MAX_PASSES = 1  # Maximum collision resolution passes per frame (reduced to prevent oscillation)
     COLLISION_BOUNDARY_PRECISION = True  # Use precise boundary positioning
-    COLLISION_TERRAIN_STEP_SIZE = 0.05  # Step size for terrain separation (fraction of marble radius)
+    COLLISION_TERRAIN_STEP_SIZE = 0.2  # Step size for terrain separation (increased for faster, more stable separation)
     
     # Color generation for marbles
     MARBLE_COLOR_SATURATION = 0.8
