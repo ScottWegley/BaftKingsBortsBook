@@ -36,9 +36,9 @@ class OptimalTerrainValidator:
         cfg = get_config()
         self.marble_radius = cfg.simulation.MARBLE_RADIUS
         
-        # Zone sizing - spawn zone needs space for 8 marbles, goal can be small
-        self.spawn_zone_radius = self.marble_radius * 2.5  # Enough for 8 marbles
-        self.goal_zone_radius = self.marble_radius * 1.5   # Small goal zone
+        # Zone sizing - use configuration parameters for flexibility
+        self.spawn_zone_radius = self.marble_radius * cfg.terrain.SPAWN_ZONE_RADIUS_MULTIPLIER
+        self.goal_zone_radius = self.marble_radius * cfg.terrain.GOAL_ZONE_RADIUS_MULTIPLIER
         
         # Wave simulation parameters - use finer resolution for better pathfinding
         self.wave_step_size = self.marble_radius * 0.4  # Much finer resolution for wave simulation

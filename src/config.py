@@ -86,10 +86,10 @@ class TerrainConfig:
     DEFAULT_TERRAIN_COMPLEXITY = 0.7  # 0.0 = borders only, 1.0 = maximum complexity
     
     # Grid resolution for terrain generation
-    TERRAIN_GRID_SCALE = 12  # World pixels per grid cell (smaller for higher resolution)
+    TERRAIN_GRID_SCALE = 10  # World pixels per grid cell (smaller for higher resolution)
     
     # Border configuration
-    SOLID_BORDER_WIDTH = 30  # Width of solid border in pixels
+    SOLID_BORDER_WIDTH = 50  # Width of solid border in pixels
     
     # Flowing terrain parameters
     NOISE_SCALE_LARGE = 0.008   # Scale for large terrain features (much slower variation)
@@ -166,6 +166,8 @@ class IndivRaceTerrainConfig(TerrainConfig):
     # Zone placement parameters
     MIN_SPAWN_GOAL_DISTANCE_FACTOR = 0.25  # Minimum distance as fraction of arena diagonal
     ZONE_SEPARATION_BUFFER = 100  # Additional buffer distance in pixels
+    SPAWN_ZONE_RADIUS_MULTIPLIER = 4.5  # Multiplier for spawn zone size (marble_radius * this value)
+    GOAL_ZONE_RADIUS_MULTIPLIER = 1.5   # Multiplier for goal zone size (marble_radius * this value)
     
 
 

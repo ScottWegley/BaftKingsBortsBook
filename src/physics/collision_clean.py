@@ -92,7 +92,7 @@ class CollisionDetector:
     
     @staticmethod
     def _resolve_terrain_collision(marble: Marble, obstacle):
-        """Simple terrain collision resolution with proper position correction"""
+        """Simple terrain collision resolution"""
         # Get collision normal
         normal_x, normal_y = obstacle.get_collision_normal(marble.x, marble.y)
         
@@ -106,14 +106,7 @@ class CollisionDetector:
             marble.velocity_y -= 2 * velocity_normal * normal_y
             marble._normalize_velocity()
         
-        # Position correction: push marble out until it's no longer colliding
-        step_size = 0.5
-        max_steps = 10
-        
-        for _ in range(max_steps):
-            if not obstacle.check_collision(marble.x, marble.y, marble.radius):
-                break  # Successfully pushed out
-            marble.x += normal_x * step_size
-            marble.y += normal_y * step_size
-
-
+        # Small position correction
+        push_distance = 1.5
+        marble.x += normal_x * push_distance
+        marble.y += normal_y * push_distance
