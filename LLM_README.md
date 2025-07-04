@@ -7,32 +7,54 @@ A modular, physics-based simulation of marbles racing on procedurally generated 
 
 - `src/`
   - `main.py`: CLI entry point
-  - `config.py`: Centralized configuration (physics, terrain, rendering)
-  - `rng.py`: Random number generation (seeded, deterministic)
-  - `physics/`: Marble physics and collision
-  - `terrain/`: Terrain generation (height fields, obstacles)
-  - `rendering/`: Pygame-based graphics
-  - `simulation/`: Simulation orchestration, marble management
-  - `game_modes/`: Game logic, zone validation
+  - `config.py`: Centralized configuration for all simulation, terrain, and rendering parameters. Supports game mode-specific overrides and runtime changes.
+  - `rng.py`: Random number generation (seeded, deterministic, supports date/random/user-set modes)
+  - `physics/`: Marble physics, collision detection (custom and pymunk-based), and marble object logic
+  - `terrain/`: Terrain generation (height fields, obstacles, noise, carving, and validation)
+  - `rendering/`: Pygame-based graphics and UI rendering
+  - `simulation/`: Simulation orchestration, marble management, and run modes
+  - `game_modes/`: Game logic, zone validation, and extensible game mode support
 
 ## Core Concepts
 
-- **Marble Physics**: Constant speed, elastic collisions, boundary handling.
-- **Terrain**: Procedurally generated using mathematical functions, with post-processing for realism.
-- **Zones**: Spawn/goal zones validated for clear paths and placement.
-- **Simulation**: Supports both real-time graphics and fast headless execution.
-- **Configuration**: All parameters (marble size, speed, terrain complexity, etc.) are centralized and overridable via CLI.
+- **Configuration System**: All simulation, terrain, and rendering parameters are centralized in `config.py` using a class-based system. Supports global, per-game-mode, and runtime overrides. Easily extensible for new game modes.
+- **Marble Physics**: Constant speed, elastic collisions, boundary handling. Physics can use custom or pymunk-based collision systems.
+- **Terrain**: Procedurally generated using noise, carving, and validation for realistic, flowing arenas. Terrain complexity and features are highly configurable.
+- **Zones**: Spawn/goal zones are placed and validated for clear paths and fair starts/goals using exhaustive search and wave simulation.
+- **Simulation**: Supports both real-time graphics and fast headless execution. Results and progress can be saved and analyzed.
 
 ## Usage
 
 - CLI options: number of marbles, terrain complexity, arena size, execution mode, RNG seed/mode.
-- Results can be saved for analysis.
+- Game mode can be set at runtime; configuration is accessible via `get_config()` and can be changed with `set_game_mode()`.
+- Results and simulation progress can be saved for later analysis.
 
 ## Dependencies
 
 - Required: `pygame`
 - Optional (for advanced terrain): `numpy`, `scipy`, `scikit-image`
 
-## Extensibility
+## Extensibility & Customization
 
 - Modular design: Physics, terrain, rendering, and simulation are decoupled for easy extension/testing.
+- **Game Modes**: Add new game modes by subclassing the configuration classes and adding logic in `game_modes/`. Register new modes in `config.py`'s `GAME_MODE_CONFIGS`.
+- **Configuration**: All parameters (marble size, speed, terrain complexity, zone placement, etc.) are easily adjustable in `config.py` or at runtime.
+
+## Configuration System Overview
+
+The configuration system is class-based and supports both global and per-game-mode overrides. Main config classes:
+
+- `SimulationConfig`: Physics and simulation parameters (marble count, speed, collision, etc.)
+- `TerrainConfig`: Arena size, terrain complexity, noise, carving, and obstacle parameters
+- `RenderingConfig`: Graphics/UI settings (window, colors, FPS, etc.)
+- Game mode-specific configs (e.g., `IndivRaceSimulationConfig`) inherit from these and override as needed.
+- The global `Config` object manages the active configuration and can be switched at runtime.
+
+To access or change configuration in code:
+
+```python
+from config import get_config, set_game_mode
+cfg = get_config()
+set_game_mode("indiv_race")  # or your custom mode
+print(cfg.simulation.NUM_MARBLES)
+```

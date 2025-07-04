@@ -7,7 +7,7 @@ import math
 from config import get_config
 from terrain import FlowingTerrainGenerator
 from physics import Marble
-from physics.pymunk_collision import CollisionDetector
+from physics import CollisionDetector
 from game_modes import IndivRaceGameMode, GameResult
 from .marble_factory import MarbleFactory
 
