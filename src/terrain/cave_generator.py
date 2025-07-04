@@ -3,7 +3,7 @@ Simplified height field generation for cave-like terrain.
 """
 
 
-from typing import List
+from typing import List, Tuple
 import rng
 from config import get_config
 from .noise import NoiseGenerator
@@ -95,6 +95,9 @@ class CaveTerrainGenerator:
         
         # Remove small isolated solid areas (clean up terrain)
         height_field = self._remove_small_islands(height_field)
+        
+        # Connect isolated air pockets to main air space
+        height_field = self._connect_isolated_air_pockets(height_field)
         
         return height_field
     
@@ -285,3 +288,115 @@ class CaveTerrainGenerator:
                         x, y = center_x + dx, center_y + dy
                         if 0 <= x < self.grid_width and 0 <= y < self.grid_height:
                             height_field[y][x] = 0.8
+    
+    def _connect_isolated_air_pockets(self, height_field: List[List[float]]) -> List[List[float]]:
+        """Connect isolated air pockets to the main air space using flood fill"""
+        # Find all connected air regions using flood fill
+        visited = [[False for _ in range(self.grid_width)] for _ in range(self.grid_height)]
+        air_regions = []
+        
+        # Find all air regions
+        for y in range(self.grid_height):
+            for x in range(self.grid_width):
+                if height_field[y][x] < 0.5 and not visited[y][x]:  # Open space, not visited
+                    region = self._flood_fill_air_region(height_field, visited, x, y)
+                    if region:
+                        air_regions.append(region)
+        
+        if len(air_regions) <= 1:
+            return height_field  # No isolated pockets or no air at all
+        
+        # Find the largest air region (main air space)
+        largest_region = max(air_regions, key=len)
+        
+        # Connect smaller regions to the largest one
+        for region in air_regions:
+            if region != largest_region and len(region) > 2:  # Don't connect tiny 1-2 cell pockets
+                self._create_connection_to_main_air(height_field, region, largest_region)
+        
+        return height_field
+    
+    def _flood_fill_air_region(self, height_field: List[List[float]], visited: List[List[bool]], 
+                              start_x: int, start_y: int) -> List[Tuple[int, int]]:
+        """Use flood fill to find all connected air cells starting from a point"""
+        if (start_x < 0 or start_x >= self.grid_width or 
+            start_y < 0 or start_y >= self.grid_height or
+            visited[start_y][start_x] or height_field[start_y][start_x] >= 0.5):
+            return []
+        
+        region = []
+        stack = [(start_x, start_y)]
+        
+        while stack:
+            x, y = stack.pop()
+            
+            if (x < 0 or x >= self.grid_width or 
+                y < 0 or y >= self.grid_height or
+                visited[y][x] or height_field[y][x] >= 0.5):
+                continue
+                
+            visited[y][x] = True
+            region.append((x, y))
+            
+            # Add neighbors to stack
+            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                stack.append((x + dx, y + dy))
+        
+        return region
+    
+    def _create_connection_to_main_air(self, height_field: List[List[float]], 
+                                     isolated_region: List[Tuple[int, int]], 
+                                     main_region: List[Tuple[int, int]]):
+        """Create a connection from an isolated air pocket to the main air space"""
+        if not isolated_region or not main_region:
+            return
+        
+        # Find the closest point between the two regions
+        min_distance = float('inf')
+        best_isolated_point = None
+        best_main_point = None
+        
+        # Sample a subset of points to avoid performance issues with large regions
+        isolated_sample = isolated_region[::max(1, len(isolated_region) // 20)]
+        main_sample = main_region[::max(1, len(main_region) // 20)]
+        
+        for iso_x, iso_y in isolated_sample:
+            for main_x, main_y in main_sample:
+                distance = ((iso_x - main_x) ** 2 + (iso_y - main_y) ** 2) ** 0.5
+                if distance < min_distance:
+                    min_distance = distance
+                    best_isolated_point = (iso_x, iso_y)
+                    best_main_point = (main_x, main_y)
+        
+        if best_isolated_point and best_main_point:
+            # Create a tunnel between the two points
+            self._carve_connection_tunnel(height_field, best_isolated_point, best_main_point)
+    
+    def _carve_connection_tunnel(self, height_field: List[List[float]], 
+                                start: Tuple[int, int], end: Tuple[int, int]):
+        """Carve a narrow tunnel to connect two air regions"""
+        start_x, start_y = start
+        end_x, end_y = end
+        
+        # Use simple line interpolation to create the tunnel
+        distance = max(abs(end_x - start_x), abs(end_y - start_y))
+        if distance == 0:
+            return
+        
+        tunnel_width = 2  # Narrow tunnel width
+        
+        for i in range(distance + 1):
+            t = i / distance
+            x = int(start_x + t * (end_x - start_x))
+            y = int(start_y + t * (end_y - start_y))
+            
+            # Carve tunnel with some width
+            for dx in range(-tunnel_width, tunnel_width + 1):
+                for dy in range(-tunnel_width, tunnel_width + 1):
+                    tunnel_x = x + dx
+                    tunnel_y = y + dy
+                    
+                    if (0 <= tunnel_x < self.grid_width and 
+                        0 <= tunnel_y < self.grid_height and
+                        abs(dx) + abs(dy) <= tunnel_width):  # Diamond shape
+                        height_field[tunnel_y][tunnel_x] = 0.0

@@ -92,7 +92,7 @@ class TerrainConfig:
     # Arena dimensions
     DEFAULT_ARENA_WIDTH = 1280
     DEFAULT_ARENA_HEIGHT = 960
-    DEFAULT_TERRAIN_COMPLEXITY = 0.7  # 0.0 = borders only, 1.0 = maximum complexity
+    DEFAULT_TERRAIN_COMPLEXITY = .88  # 0.0 = borders only, 1.0 = maximum complexity
     
     # Grid resolution for terrain generation
     TERRAIN_GRID_SCALE = 10  # World pixels per grid cell (smaller for higher resolution)
