@@ -62,14 +62,9 @@ class SimulationConfig:
 
     # Marble physics
     MARBLE_RADIUS = 15
-    MARBLE_SPEED = 150  # pixels per second
+    MARBLE_SPEED = 175  # pixels per second
     COLLISION_RESTITUTION = 1.0  # Elastic collisions
     MARBLE_PLACEMENT_BUFFER = 5  # Buffer between marbles and obstacles
-    
-    # Smooth terrain collision parameters
-    TERRAIN_REFLECTION_STRENGTH = 2.0  # How strong the velocity reflection is (2.0 = perfect reflection)
-    TERRAIN_PUSH_STRENGTH = 2.0  # How aggressively to push marbles out of terrain
-    MAX_TERRAIN_PUSH = 8.0  # Maximum distance to push in one frame for stability
     
     # Collision detection
     MAX_MARBLE_PLACEMENT_ATTEMPTS = 200

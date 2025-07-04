@@ -40,8 +40,8 @@ class OptimalTerrainValidator:
         self.spawn_zone_radius = self.marble_radius * 2.5  # Enough for 8 marbles
         self.goal_zone_radius = self.marble_radius * 1.5   # Small goal zone
         
-        # Wave simulation parameters
-        self.wave_step_size = self.marble_radius * 0.8  # Resolution for wave simulation
+        # Wave simulation parameters - use finer resolution for better pathfinding
+        self.wave_step_size = self.marble_radius * 0.4  # Much finer resolution for wave simulation
         
     def validate_indiv_race_terrain(self, terrain_obstacles: List[FlowingTerrainObstacle]) -> Optional[Tuple[Zone, Zone]]:
         """
@@ -143,30 +143,54 @@ class OptimalTerrainValidator:
         """
         Check if a zone position is valid (doesn't intersect terrain).
         Tests multiple points within the zone for thorough collision detection.
+        Also ensures there's enough surrounding open space to prevent isolated pockets.
         """
         # Test center
         if terrain.check_collision(x, y, self.marble_radius):
             return False
         
-        # Test points around the zone perimeter
-        num_test_points = 8  # Test 8 points around the circle
+        # Test points around the zone perimeter with higher density
+        num_test_points = 16  # More points for better detection
         for i in range(num_test_points):
             angle = (2 * math.pi * i) / num_test_points
-            test_x = x + (zone_radius * 0.9) * math.cos(angle)  # Stay slightly inside
-            test_y = y + (zone_radius * 0.9) * math.sin(angle)
+            test_x = x + (zone_radius * 0.95) * math.cos(angle)  # Almost at edge
+            test_y = y + (zone_radius * 0.95) * math.sin(angle)
             
             if terrain.check_collision(test_x, test_y, self.marble_radius):
                 return False
         
-        # Test a few points inside the zone
-        for radius_factor in [0.3, 0.6]:
-            for i in range(4):  # 4 points at each radius
-                angle = (2 * math.pi * i) / 4
+        # Test multiple concentric circles inside the zone
+        for radius_factor in [0.2, 0.4, 0.6, 0.8]:
+            num_circle_points = 8
+            for i in range(num_circle_points):
+                angle = (2 * math.pi * i) / num_circle_points
                 test_x = x + (zone_radius * radius_factor) * math.cos(angle)
                 test_y = y + (zone_radius * radius_factor) * math.sin(angle)
                 
                 if terrain.check_collision(test_x, test_y, self.marble_radius):
                     return False
+        
+        # Additional validation: check that the zone has enough nearby accessible area
+        # This helps prevent placement in tiny isolated pockets
+        accessible_points = 0
+        test_radius = zone_radius * 1.5  # Check slightly beyond the zone
+        num_access_tests = 12
+        
+        for i in range(num_access_tests):
+            angle = (2 * math.pi * i) / num_access_tests
+            test_x = x + test_radius * math.cos(angle)
+            test_y = y + test_radius * math.sin(angle)
+            
+            # Only test if within arena bounds
+            if (0 <= test_x < terrain.grid_width * terrain.scale_x and 
+                0 <= test_y < terrain.grid_height * terrain.scale_y):
+                if not terrain.check_collision(test_x, test_y, self.marble_radius):
+                    accessible_points += 1
+        
+        # Require at least 50% of surrounding area to be accessible
+        required_accessible = num_access_tests * 0.5
+        if accessible_points < required_accessible:
+            return False
         
         return True
     
@@ -194,20 +218,28 @@ class OptimalTerrainValidator:
         grid_goal_x = int(goal_x / self.wave_step_size)
         grid_goal_y = int(goal_y / self.wave_step_size)
         
+        # Calculate Manhattan distance for early termination if too far
+        max_distance = int((self.arena_width + self.arena_height) / self.wave_step_size)
+        
         # BFS wave simulation
         visited = set()
-        queue = deque([(grid_start_x, grid_start_y)])
+        queue = deque([(grid_start_x, grid_start_y, 0)])  # Add distance tracking
         visited.add((grid_start_x, grid_start_y))
         
         # 8-directional movement (including diagonals)
         directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
         
         while queue:
-            current_x, current_y = queue.popleft()
+            current_x, current_y, distance = queue.popleft()
             
-            # Check if we reached the goal
-            if current_x == grid_goal_x and current_y == grid_goal_y:
+            # Check if we reached the goal (allow small tolerance)
+            goal_distance = abs(current_x - grid_goal_x) + abs(current_y - grid_goal_y)
+            if goal_distance <= 2:  # Allow some tolerance for goal detection
                 return True
+            
+            # Prevent infinite search
+            if distance > max_distance:
+                continue
             
             # Expand to neighbors
             for dx, dy in directions:
@@ -221,18 +253,18 @@ class OptimalTerrainValidator:
                 world_x = next_x * self.wave_step_size
                 world_y = next_y * self.wave_step_size
                 
-                # Check bounds
-                if (world_x < 0 or world_x >= self.arena_width or 
-                    world_y < 0 or world_y >= self.arena_height):
+                # Check bounds with proper margin
+                if (world_x < self.marble_radius or world_x >= self.arena_width - self.marble_radius or 
+                    world_y < self.marble_radius or world_y >= self.arena_height - self.marble_radius):
                     continue
                 
-                # Check terrain collision
+                # Check terrain collision with marble radius
                 if terrain.check_collision(world_x, world_y, self.marble_radius):
                     continue
                 
                 # Add to queue
                 visited.add((next_x, next_y))
-                queue.append((next_x, next_y))
+                queue.append((next_x, next_y, distance + 1))
         
         # Goal not reachable
         return False

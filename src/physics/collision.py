@@ -81,49 +81,49 @@ class CollisionDetector:
     @staticmethod
     def detect_and_resolve_terrain_collisions(marbles: List[Marble], terrain_obstacles: List, 
                                             arena_width: int, arena_height: int):
-        """Detect and resolve all marble-to-terrain collisions"""
-        from config import get_config
-        cfg = get_config()
-        
+        """Simple circumference-based collision detection and resolution"""
         for marble in marbles:
+            # Check each terrain obstacle
             for obstacle in terrain_obstacles:
-                if obstacle.check_collision(marble.x, marble.y, marble.radius):
-                    CollisionDetector._resolve_terrain_collision(marble, obstacle, cfg, arena_width, arena_height)
+                if CollisionDetector._check_marble_circumference_collision(marble, obstacle):
+                    CollisionDetector._resolve_clean_collision(marble, obstacle)
+                    break  # Only handle one collision per frame
     
     @staticmethod
-    def _resolve_terrain_collision(marble: Marble, obstacle, cfg, arena_width: int, arena_height: int):
-        """Resolve a single marble-terrain collision with smooth response"""
-        # Get collision normal
-        nx, ny = obstacle.get_collision_normal(marble.x, marble.y)
+    def _check_marble_circumference_collision(marble: Marble, obstacle) -> bool:
+        """Check if any point on marble's circumference intersects terrain"""
+        # Check 8 points around the marble's circumference
+        num_points = 8
+        for i in range(num_points):
+            angle = (2 * math.pi * i) / num_points
+            check_x = marble.x + marble.radius * math.cos(angle)
+            check_y = marble.y + marble.radius * math.sin(angle)
+            
+            # Check if this point is inside terrain
+            if obstacle.check_collision(check_x, check_y, 0):
+                return True
+        return False
+    
+    @staticmethod
+    def _resolve_clean_collision(marble: Marble, obstacle):
+        """Clean collision: reflect velocity and position correctly"""
+        # Get surface normal
+        normal_x, normal_y = obstacle.get_collision_normal(marble.x, marble.y)
         
-        # Calculate how deep we are in the obstacle
-        # This gives us a smoother response based on penetration depth
-        closest_x, closest_y = obstacle.get_closest_point(marble.x, marble.y)
-        distance_to_surface = math.sqrt((marble.x - closest_x)**2 + (marble.y - closest_y)**2)
-        penetration_depth = max(0, marble.radius - distance_to_surface)
+        # Calculate velocity component toward surface
+        velocity_toward_surface = marble.velocity_x * normal_x + marble.velocity_y * normal_y
         
-        if penetration_depth > 0:
-            # Calculate dot product of velocity and normal
-            dot_product = marble.velocity_x * nx + marble.velocity_y * ny
+        # Only process if moving toward surface
+        if velocity_toward_surface < 0:
+            # Perfect elastic reflection: v_new = v_old - 2(v·n)n
+            marble.velocity_x -= 2 * velocity_toward_surface * normal_x
+            marble.velocity_y -= 2 * velocity_toward_surface * normal_y
             
-            # Only apply collision response if moving towards the obstacle
-            if dot_product < 0:
-                # Softer velocity reflection with damping
-                reflection_strength = cfg.simulation.TERRAIN_REFLECTION_STRENGTH
-                marble.velocity_x -= reflection_strength * dot_product * nx
-                marble.velocity_y -= reflection_strength * dot_product * ny
-                
-                # Ensure constant speed is maintained
-                marble._normalize_velocity()
-            
-            # Gradual push-out based on penetration depth
-            # Use smaller steps for smoother movement
-            push_strength = cfg.simulation.TERRAIN_PUSH_STRENGTH
-            separation_force = min(penetration_depth * push_strength, cfg.simulation.MAX_TERRAIN_PUSH)
-            
-            marble.x += nx * separation_force
-            marble.y += ny * separation_force
-            
-            # Keep within arena bounds
-            marble.x = max(marble.radius, min(arena_width - marble.radius, marble.x))
-            marble.y = max(marble.radius, min(arena_height - marble.radius, marble.y))
+            # Maintain constant speed
+            marble._normalize_velocity()
+        
+        # Position correction: move marble just outside collision boundary
+        marble.x += normal_x * (marble.radius * 0.1)
+        marble.y += normal_y * (marble.radius * 0.1)
+
+

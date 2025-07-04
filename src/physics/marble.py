@@ -32,7 +32,8 @@ class Marble:
         # Update position
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
-          # Boundary collisions - bounce off walls while maintaining constant speed
+        
+        # Boundary collisions - bounce off walls while maintaining constant speed
         if self.x - self.radius <= 0 or self.x + self.radius >= arena_width:
             self.velocity_x = -self.velocity_x
             # Clamp position to stay within bounds
