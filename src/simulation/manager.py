@@ -97,16 +97,17 @@ class SimulationManager:
             
         self.simulation_time += dt
         
-        # Update all marble positions and boundary collisions
+        # Update all marble positions
         for marble in self.marbles:
-            marble.update(dt, self.arena_width, self.arena_height)
+            marble.update(dt)
         
-        # Handle all terrain collisions centrally
+        # Handle all collisions centrally for better control and accuracy
+        # First handle terrain and boundary collisions
         CollisionDetector.detect_and_resolve_terrain_collisions(
             self.marbles, self.terrain_obstacles, self.arena_width, self.arena_height
         )
         
-        # Handle marble-to-marble collisions
+        # Then handle marble-to-marble collisions
         CollisionDetector.detect_and_resolve_marble_collisions(self.marbles)
           # Check win condition
         result, winner_id = self.game_mode_handler.check_win_condition(self.marbles)
