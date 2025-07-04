@@ -92,7 +92,7 @@ class TerrainConfig:
     # Arena dimensions
     DEFAULT_ARENA_WIDTH = 1280
     DEFAULT_ARENA_HEIGHT = 960
-    DEFAULT_TERRAIN_COMPLEXITY = 1.0  # 0.0 = borders only, 1.0 = maximum complexity
+    DEFAULT_TERRAIN_COMPLEXITY = 0.4  # 0.0 = borders only, 1.0 = maximum complexity
     
     # Grid resolution for terrain generation
     TERRAIN_GRID_SCALE = 9  # World pixels per grid cell (smaller for higher resolution)
@@ -107,8 +107,8 @@ class TerrainConfig:
     
     # Terrain density and structure
     BASE_TERRAIN_THRESHOLD = 0.8      # Base threshold for terrain vs open space (much more solid)
-    CORRIDOR_WIDTH_MIN = 4.0          # Minimum corridor width in grid cells
-    CORRIDOR_WIDTH_MAX = 15.0         # Maximum corridor width in grid cells
+    CORRIDOR_WIDTH_MIN = 8.0          # Minimum corridor width in grid cells
+    CORRIDOR_WIDTH_MAX = 24.0         # Maximum corridor width in grid cells
     
     # Edge variation parameters
     EDGE_VARIATION_STRENGTH = 1.2     # How much borders vary inward/outward (much more variation)
@@ -137,7 +137,7 @@ class TerrainConfig:
     
     # Connectivity parameters
     CONNECTIVITY_CHECK_RADIUS = 4     # Radius for connectivity validation
-    MIN_OPEN_SPACE_RATIO = 0.15       # Minimum ratio of open space to total area (mostly terrain)
+    MIN_OPEN_SPACE_RATIO = 0.75       # Minimum ratio of open space to total area (mostly terrain)
 
 
 
