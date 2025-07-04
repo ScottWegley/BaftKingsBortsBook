@@ -88,56 +88,22 @@ class SimulationConfig:
 
 
 class TerrainConfig:
-    """Base configuration for terrain generation"""
+    # Organic track generator parameters (used by the new generator)
+    MIN_PATH_WIDTH = 8              # Minimum width of main path (grid cells)
+    MAX_PATH_WIDTH = 12               # Maximum width of main path (grid cells)
+    CHAMBER_COUNT = 4                 # Number of chambers along the main path
+    CHAMBER_RADIUS_MIN = 6            # Minimum chamber radius (grid cells)
+    CHAMBER_RADIUS_MAX = 12           # Maximum chamber radius (grid cells)
+    BRANCH_COUNT = 3                  # Number of branches off the main path
+    ISLAND_COUNT = 6                  # Number of islands to place (in chambers/corridors)
     # Arena dimensions
     DEFAULT_ARENA_WIDTH = 1280
     DEFAULT_ARENA_HEIGHT = 960
-    DEFAULT_TERRAIN_COMPLEXITY = 0.4  # 0.0 = borders only, 1.0 = maximum complexity
-    
+    DEFAULT_TERRAIN_COMPLEXITY = .8  # 0.0 = borders only, 1.0 = maximum complexity
     # Grid resolution for terrain generation
     TERRAIN_GRID_SCALE = 9  # World pixels per grid cell (smaller for higher resolution)
-    
     # Border configuration
     SOLID_BORDER_WIDTH = 150  # Width of solid border in pixels
-    
-    # Flowing terrain parameters
-    NOISE_SCALE_LARGE = 0.008   # Scale for large terrain features (much slower variation)
-    NOISE_SCALE_MEDIUM = 0.02   # Scale for medium terrain features  
-    NOISE_SCALE_SMALL = 0.05    # Scale for small terrain features
-    
-    # Terrain density and structure
-    BASE_TERRAIN_THRESHOLD = 0.8      # Base threshold for terrain vs open space (much more solid)
-    CORRIDOR_WIDTH_MIN = 8.0          # Minimum corridor width in grid cells
-    CORRIDOR_WIDTH_MAX = 24.0         # Maximum corridor width in grid cells
-    
-    # Edge variation parameters
-    EDGE_VARIATION_STRENGTH = 1.2     # How much borders vary inward/outward (much more variation)
-    EDGE_COMPLEXITY_SCALE = 0.02      # Noise scale for edge variations (slower for smoother curves)
-    
-    # Interior feature parameters
-    INTERIOR_OBSTACLE_DENSITY = 0.08  # Density of interior obstacles (increased for more features)
-    MIN_OBSTACLE_SIZE = 5             # Minimum obstacle size in grid cells
-    MAX_OBSTACLE_SIZE = 15            # Maximum obstacle size in grid cells
-    
-    # Flow channel parameters
-    FLOW_CHANNEL_COUNT = 3            # Number of major flow channels to create (reduced further)
-    FLOW_CHANNEL_WIDTH_MIN = 8        # Minimum width of flow channels
-    FLOW_CHANNEL_WIDTH_MAX = 15       # Maximum width of flow channels
-    FLOW_CHANNEL_CURVATURE = 0.4      # How curved the flow channels are
-    
-    # Large terrain mass parameters
-    TERRAIN_MASS_COUNT = 4            # Number of large connected terrain masses (increased)
-    TERRAIN_MASS_SIZE_MIN = 12        # Minimum size of terrain masses (increased)
-    TERRAIN_MASS_SIZE_MAX = 25        # Maximum size of terrain masses (increased)
-    
-    # Dead end parameters
-    DEAD_END_PROBABILITY = 0.5        # Probability of creating dead ends
-    DEAD_END_DEPTH_MIN = 6            # Minimum dead end depth in grid cells
-    DEAD_END_DEPTH_MAX = 15           # Maximum dead end depth in grid cells
-    
-    # Connectivity parameters
-    CONNECTIVITY_CHECK_RADIUS = 4     # Radius for connectivity validation
-    MIN_OPEN_SPACE_RATIO = 0.75       # Minimum ratio of open space to total area (mostly terrain)
 
 
 

@@ -82,7 +82,7 @@ def run_graphics_mode(args=None):
         frame_dt = renderer.get_dt()
         running = renderer.handle_events()
         simulation.simulation_time += frame_dt
-        renderer.render(1.0)
+        renderer.render()
 
     # --- Main simulation loop ---
     # --- Main simulation loop ---
@@ -101,7 +101,7 @@ def run_graphics_mode(args=None):
             accumulator -= fixed_dt
 
         # Render at display frame rate
-        renderer.render(1.0)
+        renderer.render()
 
     pygame.quit()
     print(f"Simulation ended after {simulation.simulation_time:.2f} seconds")

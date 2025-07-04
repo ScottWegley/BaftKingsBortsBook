@@ -26,30 +26,298 @@ class CaveTerrainGenerator:
         self.carver = TerrainCarver(self.grid_width, self.grid_height)
     
     def generate(self) -> List[List[float]]:
-        """Generate cave-like terrain height field"""
+        """Generate organic, continuous terrain with chambers, corridors, branches, and islands (comprehensive update)."""
         if self.complexity <= 0.0:
             return self._generate_border_only()
-        
-        # Start with mostly solid terrain
-        height_field = self._create_base_solid_terrain()
-        
-        # Create solid borders
+
+        # --- 1. Start with solid terrain ---
+        height_field = [[1.0 for _ in range(self.grid_width)] for _ in range(self.grid_height)]
         self.carver.create_solid_borders(height_field)
-        
-        # Carve major flow channels
-        self.carver.carve_flow_channels(height_field, self.complexity)
-        
-        # Carve interior chambers
-        self.carver.carve_interior_chambers(height_field, self.complexity)
-        
-        # Ensure connectivity
-        height_field = self._ensure_basic_connectivity(height_field)
-        
-        # Add organic roughening to remove straight lines (but keep it subtle)
-        if self.complexity > 0.3:  # Only add roughening for higher complexity
-            self.add_organic_roughening(height_field, self.complexity * 0.5)  # Reduce intensity
-        
+
+        # --- 2. Carve main winding path (smooth drunken walk) ---
+        min_width = max(2, int(getattr(self.cfg, 'MIN_PATH_WIDTH', 4)))
+        max_width = max(min_width, int(getattr(self.cfg, 'MAX_PATH_WIDTH', min_width + 4)))
+        path = self._carve_main_path_smooth(height_field, min_width, max_width)
+
+        # --- 3. Carve large, well-connected chambers ---
+        chamber_count = max(2, int(getattr(self.cfg, 'CHAMBER_COUNT', int(self.complexity * 4))))
+        chamber_radius_min = int(getattr(self.cfg, 'CHAMBER_RADIUS_MIN', min_width + 2))
+        chamber_radius_max = int(getattr(self.cfg, 'CHAMBER_RADIUS_MAX', min_width + 8))
+        chamber_radius_range = (chamber_radius_min, chamber_radius_max)
+        chamber_centers = self._carve_chambers_connected(height_field, path, chamber_count, chamber_radius_range)
+
+        # --- 4. Add organic branches ---
+        branch_count = max(1, int(getattr(self.cfg, 'BRANCH_COUNT', int(self.complexity * 3))))
+        self._carve_branches_smooth(height_field, path, branch_count, min_width)
+
+        # --- 5. Place islands only in large open areas ---
+        island_count = max(2, int(getattr(self.cfg, 'ISLAND_COUNT', int(self.complexity * 6))))
+        self._place_islands_in_chambers(height_field, chamber_centers, island_count)
+
+        # --- 6. Smoothing/dilation pass ---
+        self._smooth_height_field(height_field, passes=2)
+
+        # --- 7. Organic roughening ---
+        if self.complexity > 0.3:
+            self.add_organic_roughening(height_field, self.complexity * 0.5)
+
+        # --- 8. Ensure all open space is connected ---
+        height_field = self._connect_isolated_air_pockets(height_field)
+
         return height_field
+
+    def _carve_main_path_smooth(self, height_field, min_width, max_width):
+        import math
+        import random
+        path = []
+        x, y = random.randint(2, self.grid_width // 6), random.randint(self.grid_height // 6, 5 * self.grid_height // 6)
+        angle = rng.uniform(-math.pi, math.pi)
+        visited = set()
+        max_steps = int(self.grid_width * 3.5)  # Allow for more winding and looping
+        for _ in range(max_steps):
+            width = rng.randint(min_width, max_width)
+            for dy in range(-width // 2, width // 2 + 1):
+                for dx in range(-width // 3, width // 3 + 1):
+                    nx, ny = x + dx, y + dy
+                    if 1 <= nx < self.grid_width - 1 and 1 <= ny < self.grid_height - 1:
+                        height_field[ny][nx] = 0.0
+                        visited.add((nx, ny))
+            path.append((x, y))
+            # --- Space-filling bias ---
+            # Sample more directions and pick the one with the most unused space
+            best_angle = angle
+            best_score = -1
+            for delta in [-1.2, -0.8, -0.4, 0, 0.4, 0.8, 1.2]:
+                test_angle = angle + delta + rng.uniform(-0.15, 0.15)
+                tx = int(x + math.cos(test_angle) * 10)
+                ty = int(y + math.sin(test_angle) * 10)
+                score = self._count_unvisited_space(height_field, tx, ty, radius=8)
+                if score > best_score:
+                    best_score = score
+                    best_angle = test_angle
+            # More aggressive winding and bouncing
+            angle = best_angle + rng.uniform(-0.5, 0.5)
+            step = rng.randint(4, 10)
+            x += int(math.cos(angle) * step + rng.randint(-1, 2))
+            y += int(math.sin(angle) * step + rng.randint(-2, 2))
+            # Bounce off edges
+            if x < 3:
+                x = 3
+                angle = math.pi - angle + rng.uniform(-0.5, 0.5)
+            if x > self.grid_width - 4:
+                x = self.grid_width - 4
+                angle = math.pi - angle + rng.uniform(-0.5, 0.5)
+            if y < 3:
+                y = 3
+                angle = -angle + rng.uniform(-0.5, 0.5)
+            if y > self.grid_height - 4:
+                y = self.grid_height - 4
+                angle = -angle + rng.uniform(-0.5, 0.5)
+            # Optionally, stop if we've covered enough area and are near the right edge
+            if x >= self.grid_width - 6 and len(path) > self.grid_width:
+                break
+        return path
+
+    def _count_unvisited_space(self, height_field, x, y, radius=8):
+        # Count how many solid cells are in a radius (for space-filling bias)
+        count = 0
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < self.grid_width and 0 <= ny < self.grid_height:
+                    if height_field[ny][nx] > 0.5:
+                        count += 1
+        return count
+
+    def _count_open_space(self, height_field, x, y, radius=7):
+        # Count how many open cells are in a radius (for space-filling bias)
+        open_count = 0
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < self.grid_width and 0 <= ny < self.grid_height:
+                    if height_field[ny][nx] < 0.5:
+                        open_count += 1
+        return open_count
+
+    def _carve_chambers_connected(self, height_field, path, chamber_count, radius_range):
+        import random
+        chamber_centers = []
+        if len(path) < chamber_count:
+            return chamber_centers
+        chosen = random.sample(path[5:-5], chamber_count) if len(path) > 10 else path
+        for (x, y) in chosen:
+            radius = rng.randint(*radius_range)
+            for dy in range(-radius, radius + 1):
+                for dx in range(-radius, radius + 1):
+                    if dx * dx + dy * dy <= radius * radius:
+                        nx, ny = x + dx, y + dy
+                        if 1 <= nx < self.grid_width - 1 and 1 <= ny < self.grid_height - 1:
+                            height_field[ny][nx] = 0.0
+            chamber_centers.append((x, y, radius))
+        return chamber_centers
+
+    def _carve_branches_smooth(self, height_field, path, branch_count, min_width):
+        import math
+        import random
+        if len(path) < 10:
+            return
+        for _ in range(branch_count):
+            start = random.choice(path[5:-5])
+            x, y = start
+            angle = rng.uniform(-math.pi / 2, math.pi / 2)
+            length = rng.randint(10, 22)
+            for i in range(length):
+                width = rng.randint(min_width, min_width + 2)
+                for dy in range(-width // 2, width // 2 + 1):
+                    for dx in range(-width // 3, width // 3 + 1):
+                        nx, ny = int(x + dx), int(y + dy)
+                        if 1 <= nx < self.grid_width - 1 and 1 <= ny < self.grid_height - 1:
+                            height_field[ny][nx] = 0.0
+                # Smooth, gradual turns
+                angle += rng.uniform(-0.18, 0.18)
+                x += int(math.cos(angle) * 2)
+                y += int(math.sin(angle) * 2)
+                y = max(2, min(self.grid_height - 3, y))
+                x = max(2, min(self.grid_width - 3, x))
+
+    def _place_islands_in_chambers(self, height_field, chamber_centers, island_count):
+        import random
+        if not chamber_centers:
+            return
+        for _ in range(island_count):
+            cx, cy, cr = random.choice(chamber_centers)
+            irad = rng.randint(2, max(3, cr // 2))
+            ox = rng.randint(-cr // 3, cr // 3)
+            oy = rng.randint(-cr // 3, cr // 3)
+            for dy in range(-irad, irad + 1):
+                for dx in range(-irad, irad + 1):
+                    if dx * dx + dy * dy <= irad * irad:
+                        nx, ny = cx + ox + dx, cy + oy + dy
+                        if 1 <= nx < self.grid_width - 1 and 1 <= ny < self.grid_height - 1:
+                            # Only place in open space (not in narrow corridors)
+                            if self._is_large_open_area(height_field, nx, ny, irad):
+                                height_field[ny][nx] = 1.0
+
+    def _is_large_open_area(self, height_field, x, y, radius):
+        # Check if a region is mostly open (for island placement)
+        open_count = 0
+        total = 0
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < self.grid_width and 0 <= ny < self.grid_height:
+                    total += 1
+                    if height_field[ny][nx] < 0.5:
+                        open_count += 1
+        return open_count > total * 0.7
+
+    def _smooth_height_field(self, height_field, passes=1):
+        # Simple smoothing/dilation: fill small gaps and round corners
+        for _ in range(passes):
+            to_open = []
+            for y in range(1, self.grid_height - 1):
+                for x in range(1, self.grid_width - 1):
+                    if height_field[y][x] > 0.5:
+                        open_neighbors = 0
+                        for dy in [-1, 0, 1]:
+                            for dx in [-1, 0, 1]:
+                                if dx == 0 and dy == 0:
+                                    continue
+                                if height_field[y + dy][x + dx] < 0.5:
+                                    open_neighbors += 1
+                        if open_neighbors >= 5:
+                            to_open.append((x, y))
+            for (x, y) in to_open:
+                height_field[y][x] = 0.0
+
+    def _carve_main_path(self, height_field, min_width, max_width):
+        """Carve a winding main path from left to right."""
+        import math
+        path = []
+        x, y = 2, self.grid_height // 2
+        angle = 0.0
+        while x < self.grid_width - 2:
+            width = rng.randint(min_width, max_width)
+            # Carve at (x, y)
+            for dy in range(-width // 2, width // 2 + 1):
+                for dx in range(-width // 3, width // 3 + 1):
+                    nx, ny = x + dx, y + dy
+                    if 1 <= nx < self.grid_width - 1 and 1 <= ny < self.grid_height - 1:
+                        height_field[ny][nx] = 0.0
+            path.append((x, y))
+            # Randomly curve the path
+            angle += rng.uniform(-0.5, 0.5)
+            step = rng.randint(1, 2)
+            x += int(math.cos(angle) * step + 1)
+            y += int(math.sin(angle) * step)
+            y = max(2, min(self.grid_height - 3, y))
+        return path
+
+    def _carve_chambers(self, height_field, path, chamber_count, radius_range):
+        """Carve chambers at random points along the main path."""
+        import random
+        chamber_centers = []
+        if len(path) < chamber_count:
+            return chamber_centers
+        chosen = random.sample(path[5:-5], chamber_count) if len(path) > 10 else path
+        for (x, y) in chosen:
+            radius = rng.randint(*radius_range)
+            for dy in range(-radius, radius + 1):
+                for dx in range(-radius, radius + 1):
+                    if dx * dx + dy * dy <= radius * radius:
+                        nx, ny = x + dx, y + dy
+                        if 1 <= nx < self.grid_width - 1 and 1 <= ny < self.grid_height - 1:
+                            height_field[ny][nx] = 0.0
+            chamber_centers.append((x, y, radius))
+        return chamber_centers
+
+    def _carve_branches(self, height_field, path, branch_count, min_width):
+        """Carve branches off the main path, possibly dead-ending."""
+        import math
+        import random
+        if len(path) < 10:
+            return
+        for _ in range(branch_count):
+            start = random.choice(path[5:-5])
+            x, y = start
+            angle = rng.uniform(-math.pi / 2, math.pi / 2)
+            length = rng.randint(8, 18)
+            for i in range(length):
+                width = rng.randint(min_width, min_width + 2)
+                for dy in range(-width // 2, width // 2 + 1):
+                    for dx in range(-width // 3, width // 3 + 1):
+                        nx, ny = int(x + dx), int(y + dy)
+                        if 1 <= nx < self.grid_width - 1 and 1 <= ny < self.grid_height - 1:
+                            height_field[ny][nx] = 0.0
+                # Randomly curve
+                angle += rng.uniform(-0.3, 0.3)
+                x += int(math.cos(angle) * 1.5)
+                y += int(math.sin(angle) * 1.5)
+                y = max(2, min(self.grid_height - 3, y))
+                x = max(2, min(self.grid_width - 3, x))
+
+    def _place_islands(self, height_field, chamber_centers, island_count, min_width):
+        """Place solid islands in chambers/corridors."""
+        import random
+        possible_centers = chamber_centers[:]
+        # Add some random points along the main path for corridor islands
+        if len(possible_centers) < island_count:
+            possible_centers += [(x, y, min_width + 1) for (x, y, _) in random.sample(chamber_centers, min(len(chamber_centers), island_count - len(possible_centers)))]
+        for _ in range(island_count):
+            if not possible_centers:
+                break
+            cx, cy, cr = random.choice(possible_centers)
+            # Place a small solid blob
+            irad = rng.randint(2, max(3, cr // 2))
+            ox = rng.randint(-cr // 3, cr // 3)
+            oy = rng.randint(-cr // 3, cr // 3)
+            for dy in range(-irad, irad + 1):
+                for dx in range(-irad, irad + 1):
+                    if dx * dx + dy * dy <= irad * irad:
+                        nx, ny = cx + ox + dx, cy + oy + dy
+                        if 1 <= nx < self.grid_width - 1 and 1 <= ny < self.grid_height - 1:
+                            height_field[ny][nx] = 1.0
     
     def _create_base_solid_terrain(self) -> List[List[float]]:
         """Create base terrain that's mostly solid with some natural variation"""

@@ -226,7 +226,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description="Test terrain generation with different RNG seeds")
-    parser.add_argument("--num-seeds", type=int, default=20, 
+    parser.add_argument("--num-seeds", type=int, default=5, 
                        help="Number of seeds to test (default: 1000)")
     parser.add_argument("--start-seed", type=int, default=None,
                        help="Starting seed value (default: use current timestamp)")
