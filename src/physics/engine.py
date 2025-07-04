@@ -11,6 +11,7 @@ import pymunk
 from typing import List, Dict, Optional
 from .marble import Marble
 from config import get_config
+import rng
 
 
 class PhysicsEngine:
@@ -39,6 +40,12 @@ class PhysicsEngine:
         
         # Store terrain obstacles
         self.terrain_bodies = []  # type: List[pymunk.Body]
+        
+        # Store pre-collision velocities to detect stuck bouncing
+        self.pre_collision_velocities = {}  # type: Dict[pymunk.Body, tuple]
+        
+        # Setup collision handlers for velocity variation
+        self._setup_collision_handlers()
     
     def _create_boundaries(self):
         """Create static boundary walls for the arena"""
@@ -58,6 +65,12 @@ class PhysicsEngine:
             boundary.collision_type = 1
         
         self.space.add(boundary_body, *boundaries)
+    
+    def _setup_collision_handlers(self):
+        """Setup collision handlers - simplified for newer pymunk versions"""
+        # We'll handle collision variation in the update_physics method instead
+        # of using the deprecated collision handler API
+        pass
     
     def add_marble(self, marble: Marble, marble_id: int):
         """Add a marble to the physics system"""
@@ -115,6 +128,9 @@ class PhysicsEngine:
         # Step the physics simulation
         self.space.step(dt)
         
+        # Check for stuck bouncing patterns and add variation if needed
+        self._check_and_fix_stuck_bouncing()
+        
         # Restore constant speeds and sync back to marble objects
         for body, marble in self.body_to_marble.items():
             marble.x, marble.y = body.position
@@ -165,6 +181,60 @@ class PhysicsEngine:
                 self.space.remove(shape)
             self.space.remove(body)
         self.terrain_bodies.clear()
+    
+    def _check_and_fix_stuck_bouncing(self):
+        """
+        Check each marble for stuck bouncing patterns and add variation if needed.
+        
+        This detects when marbles are moving primarily in one axis (horizontal 
+        or vertical) which indicates they're stuck bouncing between parallel surfaces.
+        """
+        for body, marble in self.body_to_marble.items():
+            vx, vy = body.velocity
+            
+            # Skip if marble is moving too slowly
+            if abs(vx) < 0.1 and abs(vy) < 0.1:
+                continue
+            
+            # Calculate the angle of movement
+            movement_angle = math.atan2(abs(vy), abs(vx))
+            
+            # Check if movement is too close to purely horizontal or vertical
+            # (within ~2 degrees of 0° or 90°)
+            horizontal_threshold = math.radians(2)  # 2 degrees
+            vertical_threshold = math.radians(88)   # 88 degrees (close to 90°)
+            
+            is_too_horizontal = movement_angle < horizontal_threshold
+            is_too_vertical = movement_angle > vertical_threshold
+            
+            if is_too_horizontal or is_too_vertical:
+                self._add_velocity_variation(body, marble.speed)
+    
+    def _add_velocity_variation(self, marble_body, target_speed):
+        """
+        Add small random variation to marble velocity to break stuck patterns.
+        
+        This adds a small angular variation to the velocity direction without
+        changing the overall speed.
+        """
+        vx, vy = marble_body.velocity
+        
+        # Calculate current angle
+        current_angle = math.atan2(vy, vx)
+        
+        # Add small random variation (±2 to ±5 degrees)
+        variation_degrees = rng.uniform(2, 5)
+        if rng.random_float() < 0.5:
+            variation_degrees = -variation_degrees
+        
+        variation_radians = math.radians(variation_degrees)
+        new_angle = current_angle + variation_radians
+        
+        # Apply new velocity with same speed
+        new_vx = target_speed * math.cos(new_angle)
+        new_vy = target_speed * math.sin(new_angle)
+        
+        marble_body.velocity = new_vx, new_vy
 
 
 # Global physics engine instance
