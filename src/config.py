@@ -89,17 +89,17 @@ class SimulationConfig:
 
 class TerrainConfig:
     # Organic track generator parameters (used by the new generator)
-    MIN_PATH_WIDTH = 8              # Minimum width of main path (grid cells)
-    MAX_PATH_WIDTH = 12               # Maximum width of main path (grid cells)
+    MIN_PATH_WIDTH = 10              # Minimum width of main path (grid cells)
+    MAX_PATH_WIDTH = 10               # Maximum width of main path (grid cells)
     CHAMBER_COUNT = 4                 # Number of chambers along the main path
     CHAMBER_RADIUS_MIN = 6            # Minimum chamber radius (grid cells)
     CHAMBER_RADIUS_MAX = 12           # Maximum chamber radius (grid cells)
     BRANCH_COUNT = 3                  # Number of branches off the main path
     ISLAND_COUNT = 6                  # Number of islands to place (in chambers/corridors)
     # Arena dimensions
-    DEFAULT_ARENA_WIDTH = 1280
-    DEFAULT_ARENA_HEIGHT = 960
-    DEFAULT_TERRAIN_COMPLEXITY = .8  # 0.0 = borders only, 1.0 = maximum complexity
+    DEFAULT_ARENA_WIDTH = 1408
+    DEFAULT_ARENA_HEIGHT = 792
+    DEFAULT_TERRAIN_COMPLEXITY = 1.0  # 0.0 = borders only, 1.0 = maximum complexity
     # Grid resolution for terrain generation
     TERRAIN_GRID_SCALE = 9  # World pixels per grid cell (smaller for higher resolution)
     # Border configuration
