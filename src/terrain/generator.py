@@ -23,28 +23,12 @@ class FlowingTerrainGenerator:
         self.base_color = self._generate_terrain_color()
     
     def _generate_terrain_color(self) -> Tuple[int, int, int]:
-        """Generate a natural terrain color (browns, tans, earth tones)"""
-        # Generate earth tone colors similar to reference images
-        color_type = rng.randint(0, 2)
-        
-        if color_type == 0:
-            # Brown terrain (like reference images)
-            red = rng.randint(120, 160)
-            green = rng.randint(80, 120)
-            blue = rng.randint(60, 100)
-        elif color_type == 1:
-            # Tan/beige terrain
-            red = rng.randint(150, 200)
-            green = rng.randint(140, 180)
-            blue = rng.randint(100, 140)
-        else:
-            # Gray terrain
-            gray_value = rng.randint(100, 140)
-            red = gray_value
-            green = gray_value
-            blue = gray_value
-        
-        return (red, green, blue)
+        """Generate a truly random color for the terrain (any RGB value)."""
+        return (
+            rng.randint(0, 255),
+            rng.randint(0, 255),
+            rng.randint(0, 255)
+        )
     
     def generate_terrain(self, complexity: float = 0.5) -> List:
         """Generate flowing terrain with configurable complexity."""

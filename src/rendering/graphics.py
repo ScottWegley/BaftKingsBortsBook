@@ -23,15 +23,12 @@ class GraphicsRenderer:
     
     def render(self):
         """Render the current simulation state"""
-        cfg = get_config()
-        
-        # Clear screen with configured background color
-        self.screen.fill(cfg.rendering.BACKGROUND_COLOR)
-        
+        # Always use black background
+        self.screen.fill((0, 0, 0))
         # Draw arena border
         pygame.draw.rect(self.screen, (255, 255, 255), 
                         (0, 0, self.simulation.arena_width, self.simulation.arena_height), 2)
-          # Draw terrain
+        # Draw terrain with its color scheme
         self.simulation.terrain_generator.render_terrain(self.screen)
         
         # Draw zones if available

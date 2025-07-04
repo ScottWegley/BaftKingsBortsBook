@@ -114,55 +114,31 @@ class FlowingTerrainObstacle:
         return (closest_x, closest_y)
     
     def render(self, screen: pygame.Surface, color: Tuple[int, int, int] = (100, 100, 100)):
-        """Render the flowing terrain"""        # Render terrain as colored rectangles
+        """Render the flowing terrain with a smooth color gradient based on height."""
         for y in range(self.grid_height):
             for x in range(self.grid_width):
                 height = self.height_field[y][x]
-                
                 if height > self.threshold:
-                    # Calculate world position
                     world_x = x * self.scale_x
                     world_y = y * self.scale_y
-                    
-                    # Create height-based color variation using the base color
-                    height_multiplier = 0.7 + (height * 0.6)  # Range from 0.7 to 1.3
-                    height_multiplier = min(1.3, max(0.7, height_multiplier))
-                    
-                    # Apply height variation to base color
-                    terrain_color = (
-                        min(255, int(self.base_color[0] * height_multiplier)),
-                        min(255, int(self.base_color[1] * height_multiplier)),
-                        min(255, int(self.base_color[2] * height_multiplier))
+                    # Start gradient at a bright version of the base color (e.g., 60% base color, 40% white)
+                    t = (height - self.threshold) / (1.0 - self.threshold)
+                    t = max(0.0, min(1.0, t))
+                    # Interpolate from bright (base color + white) to base color
+                    bright_color = (
+                        int(self.base_color[0] * 0.6 + 255 * 0.4),
+                        int(self.base_color[1] * 0.6 + 255 * 0.4),
+                        int(self.base_color[2] * 0.6 + 255 * 0.4)
                     )
-                    
-                    # Draw terrain cell
+                    terrain_color = (
+                        int(bright_color[0] * (1 - t) + self.base_color[0] * t),
+                        int(bright_color[1] * (1 - t) + self.base_color[1] * t),
+                        int(bright_color[2] * (1 - t) + self.base_color[2] * t)
+                    )
                     rect = pygame.Rect(
-                        int(world_x), 
-                        int(world_y), 
-                        int(self.scale_x) + 1, 
+                        int(world_x),
+                        int(world_y),
+                        int(self.scale_x) + 1,
                         int(self.scale_y) + 1
                     )
                     pygame.draw.rect(screen, terrain_color, rect)
-    
-    def get_neighbors(self, point: Tuple[int, int]) -> List[Tuple[int, int]]:
-        """
-        Get valid neighboring points for pathfinding.
-        """
-        x, y = point
-        neighbors = []
-
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # Cardinal directions
-            neighbor_x = x + dx
-            neighbor_y = y + dy
-
-            if 0 <= neighbor_x < self.grid_width and 0 <= neighbor_y < self.grid_height:
-                if self.height_field[neighbor_y][neighbor_x] <= self.threshold:  # Passable terrain
-                    neighbors.append((neighbor_x, neighbor_y))
-
-        return neighbors
-
-    def get_cost(self, current: Tuple[int, int], neighbor: Tuple[int, int]) -> float:
-        """
-        Get movement cost between two points.
-        """
-        return 1.0  # Uniform cost for now

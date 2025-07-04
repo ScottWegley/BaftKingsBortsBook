@@ -142,7 +142,7 @@ class RenderingConfig:
     
     # Display settings
     WINDOW_TITLE = "Marble Race Simulation"
-    BACKGROUND_COLOR = (80, 180, 80)  # Brighter green background like reference images 
+    BACKGROUND_COLOR = (0, 0, 0)  # Black background for terrain
     
     # UI elements
     SHOW_FPS = True

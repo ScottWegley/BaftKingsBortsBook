@@ -7,7 +7,7 @@ import math
 from config import get_config
 from terrain import FlowingTerrainGenerator
 from physics import Marble, CollisionDetector
-import game_modes
+from game_modes import IndivRaceGameMode, GameResult
 from .marble_factory import MarbleFactory
 
 
@@ -34,7 +34,7 @@ class SimulationManager:
         
         # Initialize game mode handler
         if self.game_mode == "indiv_race":
-            self.game_mode_handler = game_modes.IndivRaceGameMode(self.arena_width, self.arena_height)
+            self.game_mode_handler = IndivRaceGameMode(self.arena_width, self.arena_height)
         else:
             raise ValueError(f"Unsupported game mode: {self.game_mode}")
         
@@ -110,7 +110,7 @@ class SimulationManager:
         CollisionDetector.detect_and_resolve_marble_collisions(self.marbles)
           # Check win condition
         result, winner_id = self.game_mode_handler.check_win_condition(self.marbles)
-        if result == game_modes.GameResult.WINNER:
+        if result == GameResult.WINNER:
             self.game_finished = True
             self.winner_marble_id = winner_id
             print(f"Marble {winner_id} wins the race!")
