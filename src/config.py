@@ -91,7 +91,7 @@ class TerrainConfig:
     DEFAULT_TERRAIN_COMPLEXITY = 0.7  # 0.0 = borders only, 1.0 = maximum complexity
     
     # Grid resolution for terrain generation
-    TERRAIN_GRID_SCALE = 16  # World pixels per grid cell (even larger for smoother look)
+    TERRAIN_GRID_SCALE = 12  # World pixels per grid cell (smaller for higher resolution)
     
     # Border configuration
     SOLID_BORDER_WIDTH = 30  # Width of solid border in pixels

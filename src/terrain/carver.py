@@ -10,6 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from typing import List, Tuple
 import rng
 from config import get_config
+from .noise import NoiseGenerator
 
 
 class TerrainCarver:
@@ -96,20 +97,22 @@ class TerrainCarver:
     
     def _carve_curved_path(self, height_field: List[List[float]], 
                           start_x: int, start_y: int, end_x: int, end_y: int, width: float):
-        """Carve a curved path between two points"""
-        # Create curved path using Bezier curve
+        """Carve a gently curved path between two points"""
+        # Simple curved path with one control point
         mid_x = (start_x + end_x) / 2
         mid_y = (start_y + end_y) / 2
         
-        # Add curvature
-        offset_x = rng.uniform(-0.3, 0.3) * abs(end_x - start_x)
-        offset_y = rng.uniform(-0.3, 0.3) * abs(end_y - start_y)
+        # Add gentle curvature
+        curve_strength = min(abs(end_x - start_x), abs(end_y - start_y)) * 0.2  # Reduced
+        offset_x = rng.uniform(-curve_strength, curve_strength)
+        offset_y = rng.uniform(-curve_strength, curve_strength)
         
         control_x = mid_x + offset_x
         control_y = mid_y + offset_y
         
         # Sample points along the curve
-        num_points = max(50, int(math.sqrt((end_x - start_x)**2 + (end_y - start_y)**2) * 2))
+        distance = max(abs(end_x - start_x), abs(end_y - start_y))
+        num_points = max(20, int(distance * 1.5))
         
         for i in range(num_points + 1):
             t = i / num_points
@@ -118,6 +121,7 @@ class TerrainCarver:
             x = (1-t)**2 * start_x + 2*(1-t)*t * control_x + t**2 * end_x
             y = (1-t)**2 * start_y + 2*(1-t)*t * control_y + t**2 * end_y
             
+            # Simple circular carving without width variation
             self._carve_circular_area(height_field, x, y, width / 2)
     
     def _carve_circular_area(self, height_field: List[List[float]], 
