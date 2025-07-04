@@ -29,7 +29,7 @@ class SimulationManager:
         self.terrain_complexity = cfg.simulation.TERRAIN_COMPLEXITY
         self.game_mode = game_mode or cfg.simulation.DEFAULT_GAME_MODE
         
-        self.simulation_time = 0.0
+        self.simulation_time = -3.0  # Start timer at -3 for pre-sim pause
         self.game_finished = False
         self.winner_marble_id = None
         

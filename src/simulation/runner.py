@@ -70,31 +70,42 @@ def run_graphics_mode(args=None):
     
     simulation = SimulationManager()
     renderer = GraphicsRenderer(simulation)
-    
+
     cfg = get_config()
     running = True
-    # Use fixed timestep for simulation consistency, separate from rendering frame rate
     fixed_dt = cfg.simulation.FIXED_TIMESTEP
     accumulator = 0.0
-    
+
+
+    # --- Pre-simulation countdown: only update timer and render, no simulation processing ---
+    while running and simulation.simulation_time < 0:
+        frame_dt = renderer.get_dt()
+        running = renderer.handle_events()
+        simulation.simulation_time += frame_dt
+        renderer.render(1.0)
+
+    # --- Main simulation loop ---
+    # --- Main simulation loop ---
+
+
     while running and not simulation.is_finished():
         frame_dt = renderer.get_dt()
         accumulator += frame_dt
-        
+
         # Handle events
         running = renderer.handle_events()
-        
-        # Update simulation with fixed timestep (may run multiple times per frame)
+
+        # Standard simulation update
         while accumulator >= fixed_dt:
             simulation.update(fixed_dt)
             accumulator -= fixed_dt
-        
+
         # Render at display frame rate
-        renderer.render()
-    
+        renderer.render(1.0)
+
     pygame.quit()
     print(f"Simulation ended after {simulation.simulation_time:.2f} seconds")
-    
+
     # Save results if args provided
     if args is not None and simulation.get_winner() is not None:
         _save_simulation_results(args, simulation.simulation_time, simulation.get_winner())
