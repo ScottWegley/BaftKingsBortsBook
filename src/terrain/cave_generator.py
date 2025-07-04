@@ -76,45 +76,96 @@ class CaveTerrainGenerator:
         return height_field
     
     def _ensure_basic_connectivity(self, height_field: List[List[float]]) -> List[List[float]]:
-        """Ensure there's good connectivity with gentle curves"""
-        # Create main horizontal corridor with gentle curves
-        mid_y = self.grid_height // 2
+        """Ensure there's good connectivity with variety in patterns"""
+        # Randomly choose connectivity pattern to avoid the repetitive cross
+        connectivity_pattern = rng.random_float()
         
-        for x in range(self.grid_width):
-            # Use gentler noise for subtle curves
-            curve_noise = NoiseGenerator.perlin_noise_2d(x, 0, 0.06) * 4  # Reduced from 8
-            y = int(mid_y + curve_noise)
-            y = max(3, min(self.grid_height - 4, y))
-            
-            # Consistent corridor width
-            corridor_width = 4  # Fixed width for cleaner look
-            
-            # Carve clean corridor
-            for dy in range(-corridor_width//2, corridor_width//2 + 1):
-                corridor_y = y + dy
-                if 0 <= corridor_y < self.grid_height:
-                    height_field[corridor_y][x] = 0.0
-        
-        # Add simpler vertical connector
-        mid_x = self.grid_width // 2
-        for y in range(self.grid_height):
-            # Gentle horizontal variation
-            curve_noise = NoiseGenerator.perlin_noise_2d(0, y, 0.08) * 2  # Reduced from 4
-            connector_x = int(mid_x + curve_noise)
-            connector_x = max(2, min(self.grid_width - 3, connector_x))
-            
-            # Fixed width vertical connector
-            width = 2
-            for dx in range(-width, width + 1):
-                final_x = connector_x + dx
-                if 0 <= final_x < self.grid_width:
-                    height_field[y][final_x] = 0.0
+        if connectivity_pattern < 0.3:
+            # No cross pattern - rely on natural caves and flow channels
+            pass
+        elif connectivity_pattern < 0.6:
+            # Create horizontal corridor only (wider)
+            self._create_horizontal_corridor(height_field)
+        elif connectivity_pattern < 0.8:
+            # Create vertical corridor only (wider) 
+            self._create_vertical_corridor(height_field)
+        else:
+            # Create the cross pattern but with much wider channels
+            self._create_cross_pattern(height_field)
         
         # Remove small isolated solid areas (clean up terrain)
         height_field = self._remove_small_islands(height_field)
         
         return height_field
     
+    def _create_horizontal_corridor(self, height_field: List[List[float]]):
+        """Create a single horizontal corridor with gentle curves"""
+        mid_y = self.grid_height // 2
+        
+        for x in range(self.grid_width):
+            # Use gentler noise for subtle curves
+            curve_noise = NoiseGenerator.perlin_noise_2d(x, 0, 0.06) * 4
+            y = int(mid_y + curve_noise)
+            y = max(4, min(self.grid_height - 5, y))
+            
+            # Much wider corridor (increased from 4 to 8-12)
+            corridor_width = rng.randint(8, 12)
+            
+            # Carve clean corridor
+            for dy in range(-corridor_width//2, corridor_width//2 + 1):
+                corridor_y = y + dy
+                if 0 <= corridor_y < self.grid_height:
+                    height_field[corridor_y][x] = 0.0
+    
+    def _create_vertical_corridor(self, height_field: List[List[float]]):
+        """Create a single vertical corridor with gentle curves"""
+        mid_x = self.grid_width // 2
+        
+        for y in range(self.grid_height):
+            # Gentle horizontal variation
+            curve_noise = NoiseGenerator.perlin_noise_2d(0, y, 0.08) * 3
+            connector_x = int(mid_x + curve_noise)
+            connector_x = max(4, min(self.grid_width - 5, connector_x))
+            
+            # Much wider vertical corridor (increased from 2 to 6-10)
+            width = rng.randint(6, 10)
+            for dx in range(-width//2, width//2 + 1):
+                final_x = connector_x + dx
+                if 0 <= final_x < self.grid_width:
+                    height_field[y][final_x] = 0.0
+    
+    def _create_cross_pattern(self, height_field: List[List[float]]):
+        """Create the traditional cross pattern but with wider channels"""
+        # Create wider horizontal corridor
+        mid_y = self.grid_height // 2
+        
+        for x in range(self.grid_width):
+            curve_noise = NoiseGenerator.perlin_noise_2d(x, 0, 0.06) * 4
+            y = int(mid_y + curve_noise)
+            y = max(4, min(self.grid_height - 5, y))
+            
+            # Much wider corridor (increased from 4 to 8-12)
+            corridor_width = rng.randint(8, 12)
+            
+            for dy in range(-corridor_width//2, corridor_width//2 + 1):
+                corridor_y = y + dy
+                if 0 <= corridor_y < self.grid_height:
+                    height_field[corridor_y][x] = 0.0
+        
+        # Create wider vertical connector
+        mid_x = self.grid_width // 2
+        for y in range(self.grid_height):
+            curve_noise = NoiseGenerator.perlin_noise_2d(0, y, 0.08) * 3
+            connector_x = int(mid_x + curve_noise)
+            connector_x = max(4, min(self.grid_width - 5, connector_x))
+            
+            # Much wider vertical connector (increased from 2 to 6-10)
+            width = rng.randint(6, 10)
+            for dx in range(-width//2, width//2 + 1):
+                final_x = connector_x + dx
+                if 0 <= final_x < self.grid_width:
+                    height_field[y][final_x] = 0.0
+
     def _remove_small_islands(self, height_field: List[List[float]]) -> List[List[float]]:
         """Remove small isolated solid terrain pieces"""
         for y in range(1, self.grid_height - 1):

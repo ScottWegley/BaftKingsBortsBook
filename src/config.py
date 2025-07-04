@@ -98,7 +98,7 @@ class TerrainConfig:
     TERRAIN_GRID_SCALE = 10  # World pixels per grid cell (smaller for higher resolution)
     
     # Border configuration
-    SOLID_BORDER_WIDTH = 50  # Width of solid border in pixels
+    SOLID_BORDER_WIDTH = 150  # Width of solid border in pixels
     
     # Flowing terrain parameters
     NOISE_SCALE_LARGE = 0.008   # Scale for large terrain features (much slower variation)
@@ -121,8 +121,8 @@ class TerrainConfig:
     
     # Flow channel parameters
     FLOW_CHANNEL_COUNT = 3            # Number of major flow channels to create (reduced further)
-    FLOW_CHANNEL_WIDTH_MIN = 4        # Minimum width of flow channels
-    FLOW_CHANNEL_WIDTH_MAX = 8        # Maximum width of flow channels
+    FLOW_CHANNEL_WIDTH_MIN = 8        # Minimum width of flow channels
+    FLOW_CHANNEL_WIDTH_MAX = 15       # Maximum width of flow channels
     FLOW_CHANNEL_CURVATURE = 0.4      # How curved the flow channels are
     
     # Large terrain mass parameters
