@@ -6,6 +6,13 @@ import math
 from typing import List, Tuple
 import pygame
 
+# Import pymunk for physics integration
+try:
+    import pymunk
+    PYMUNK_AVAILABLE = True
+except ImportError:
+    PYMUNK_AVAILABLE = False
+
 
 class FlowingTerrainObstacle:
     """Flowing terrain obstacle using height field"""
@@ -225,3 +232,89 @@ class FlowingTerrainObstacle:
                         int(self.scale_y) + 1
                     )
                     pygame.draw.rect(screen, terrain_color, rect)
+    
+    def get_pymunk_shapes(self, body):
+        """
+        Generate pymunk collision shapes for this terrain obstacle.
+        
+        For flowing terrain, we'll create a simplified collision representation
+        using segments to approximate the terrain boundaries.
+        """
+        if not PYMUNK_AVAILABLE:
+            return []
+        
+        shapes = []
+        
+        # Create boundary segments for the world edges
+        world_width = self.grid_width * self.scale_x
+        world_height = self.grid_height * self.scale_y
+        
+        # World boundary segments
+        boundary_segments = [
+            # Left boundary (x=0)
+            pymunk.Segment(body, (0, 0), (0, world_height), 2),
+            # Right boundary  
+            pymunk.Segment(body, (world_width, 0), (world_width, world_height), 2),
+            # Top boundary (y=0)
+            pymunk.Segment(body, (0, 0), (world_width, 0), 2),
+            # Bottom boundary
+            pymunk.Segment(body, (0, world_height), (world_width, world_height), 2)
+        ]
+        
+        shapes.extend(boundary_segments)
+        
+        # For interior terrain, we'll create a simplified representation
+        # Sample the terrain at regular intervals and create collision segments
+        # for transitions between solid and non-solid areas
+        
+        sample_step = 1  # Check every cell boundary for maximum accuracy
+        
+        # Horizontal segments (for vertical terrain boundaries)
+        for y in range(0, self.grid_height, sample_step):
+            for x in range(self.grid_width - 1):
+                current_solid = self.height_field[y][x] > self.threshold
+                next_solid = self.height_field[y][x + 1] > self.threshold
+                
+                # Create vertical segment when transitioning from open to solid
+                if not current_solid and next_solid:
+                    world_x = (x + 1) * self.scale_x
+                    world_y1 = y * self.scale_y
+                    world_y2 = min((y + sample_step) * self.scale_y, world_height)
+                    
+                    segment = pymunk.Segment(body, (world_x, world_y1), (world_x, world_y2), 1)
+                    shapes.append(segment)
+                    
+                # Create vertical segment when transitioning from solid to open  
+                elif current_solid and not next_solid:
+                    world_x = (x + 1) * self.scale_x
+                    world_y1 = y * self.scale_y
+                    world_y2 = min((y + sample_step) * self.scale_y, world_height)
+                    
+                    segment = pymunk.Segment(body, (world_x, world_y1), (world_x, world_y2), 1)
+                    shapes.append(segment)
+        
+        # Vertical segments (for horizontal terrain boundaries)
+        for x in range(0, self.grid_width, sample_step):
+            for y in range(self.grid_height - 1):
+                current_solid = self.height_field[y][x] > self.threshold
+                next_solid = self.height_field[y + 1][x] > self.threshold
+                
+                # Create horizontal segment when transitioning from open to solid
+                if not current_solid and next_solid:
+                    world_x1 = x * self.scale_x
+                    world_x2 = min((x + sample_step) * self.scale_x, world_width)
+                    world_y = (y + 1) * self.scale_y
+                    
+                    segment = pymunk.Segment(body, (world_x1, world_y), (world_x2, world_y), 1)
+                    shapes.append(segment)
+                    
+                # Create horizontal segment when transitioning from solid to open
+                elif current_solid and not next_solid:
+                    world_x1 = x * self.scale_x
+                    world_x2 = min((x + sample_step) * self.scale_x, world_width)
+                    world_y = (y + 1) * self.scale_y
+                    
+                    segment = pymunk.Segment(body, (world_x1, world_y), (world_x2, world_y), 1)
+                    shapes.append(segment)
+        
+        return shapes
