@@ -2,9 +2,6 @@
 Base classes and enums for game modes.
 """
 
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from typing import Tuple
 from enum import Enum

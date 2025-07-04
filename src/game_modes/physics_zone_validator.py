@@ -3,9 +3,6 @@ Physics-based zone placement using marble simulation.
 """
 
 import math
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from typing import List, Optional, Tuple, Set
 import rng

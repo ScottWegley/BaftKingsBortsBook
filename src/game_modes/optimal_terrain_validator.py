@@ -4,9 +4,6 @@ Places spawn and goal zones at the furthest valid positions from center that can
 """
 
 import math
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from typing import List, Optional, Tuple, Set
 from collections import deque
