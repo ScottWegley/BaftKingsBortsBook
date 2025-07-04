@@ -62,18 +62,22 @@ class SimulationConfig:
 
     # Marble physics
     MARBLE_RADIUS = 15
-    MARBLE_SPEED = 150  # pixels per second
+    MARBLE_SPEED = 175  # pixels per second
     COLLISION_RESTITUTION = 1.0  # Elastic collisions
     MARBLE_PLACEMENT_BUFFER = 5  # Buffer between marbles and obstacles
     
-    # Smooth terrain collision parameters
-    TERRAIN_REFLECTION_STRENGTH = 2.0  # How strong the velocity reflection is (2.0 = perfect reflection)
-    TERRAIN_PUSH_STRENGTH = 2.0  # How aggressively to push marbles out of terrain
-    MAX_TERRAIN_PUSH = 8.0  # Maximum distance to push in one frame for stability
-    
-    # Collision detection
+    # Collision detection and resolution
     MAX_MARBLE_PLACEMENT_ATTEMPTS = 200
     SEPARATION_BUFFER = 5  # Minimum distance between marbles
+    
+    # Collision system configuration
+    COLLISION_POSITION_TOLERANCE = 0.1  # Minimum distance to consider objects separated (increased for stability)
+    COLLISION_MAX_SEPARATION_ITERATIONS = 4  # Maximum attempts to separate overlapping objects (reduced to avoid jitter)
+    COLLISION_VELOCITY_DAMPING = 0.999  # Slight velocity damping to prevent energy buildup (closer to 1.0 = less damping)
+    COLLISION_SEPARATION_FACTOR = 1.0  # Factor for marble separation (1.0 = full separation)
+    COLLISION_MAX_PASSES = 1  # Maximum collision resolution passes per frame (reduced to prevent oscillation)
+    COLLISION_BOUNDARY_PRECISION = True  # Use precise boundary positioning
+    COLLISION_TERRAIN_STEP_SIZE = 0.2  # Step size for terrain separation (increased for faster, more stable separation)
     
     # Color generation for marbles
     MARBLE_COLOR_SATURATION = 0.8
@@ -85,43 +89,56 @@ class SimulationConfig:
 
 class TerrainConfig:
     """Base configuration for terrain generation"""
-    
     # Arena dimensions
     DEFAULT_ARENA_WIDTH = 1280
     DEFAULT_ARENA_HEIGHT = 960
-    DEFAULT_TERRAIN_COMPLEXITY = .35  # 0 full terrain, 1 minimal terrain
+    DEFAULT_TERRAIN_COMPLEXITY = 0.4  # 0.0 = borders only, 1.0 = maximum complexity
+    
+    # Grid resolution for terrain generation
+    TERRAIN_GRID_SCALE = 9  # World pixels per grid cell (smaller for higher resolution)
+    
+    # Border configuration
+    SOLID_BORDER_WIDTH = 150  # Width of solid border in pixels
     
     # Flowing terrain parameters
-    FLOW_GRID_SCALE = 8  # Divide arena dimensions by this for grid resolution
-    FLOW_HEIGHT_THRESHOLD = 0.35  # Increase threshold to reduce small isolated features
-    FLOW_SMOOTHING_ITERATIONS = 3  # More smoothing to eliminate small holes
-    FLOW_GAUSSIAN_SIGMA = 1.2  # Increase sigma for better smoothing
+    NOISE_SCALE_LARGE = 0.008   # Scale for large terrain features (much slower variation)
+    NOISE_SCALE_MEDIUM = 0.02   # Scale for medium terrain features  
+    NOISE_SCALE_SMALL = 0.05    # Scale for small terrain features
     
-    # Sine wave parameters for flowing terrain - create cleaner terrain boundaries
-    FLOW_FREQ1_BASE = 0.08  # Lower frequency for larger, cleaner terrain masses
-    FLOW_FREQ2_BASE = 0.04  # Lower frequency for smoother variations
-    FLOW_FREQ3_BASE = 0.15  # Moderate frequency for some detail but not noise
-    FLOW_AMPLITUDE1 = 0.5   # Increase for more distinct terrain regions
-    FLOW_AMPLITUDE2 = 0.3   # Keep moderate
-    FLOW_AMPLITUDE3 = 0.2   # Reduce to avoid creating small holes
+    # Terrain density and structure
+    BASE_TERRAIN_THRESHOLD = 0.8      # Base threshold for terrain vs open space (much more solid)
+    CORRIDOR_WIDTH_MIN = 8.0          # Minimum corridor width in grid cells
+    CORRIDOR_WIDTH_MAX = 24.0         # Maximum corridor width in grid cells
     
-    # Channel generation parameters
-    CHANNEL_WIDTH_MIN = 50  # Wider channels to create cleaner open spaces
-    CHANNEL_WIDTH_MAX = 120
-    CHANNEL_DEPTH = 0.6     # Deeper channels for cleaner separation
-    CHANNEL_SMOOTHNESS = 25 # More smoothing for channels
-    NUM_CHANNELS_BASE = 3   # Add more channels for better separation
+    # Edge variation parameters
+    EDGE_VARIATION_STRENGTH = 1.2     # How much borders vary inward/outward (much more variation)
+    EDGE_COMPLEXITY_SCALE = 0.02      # Noise scale for edge variations (slower for smoother curves)
     
-    # Border and cleanup parameters
-    SOLID_BORDER_WIDTH = 30  # Width of solid border in pixels
-    MIN_TERRAIN_REGION_SIZE = 300  # Increase to eliminate small terrain patches
-    NOISE_REDUCTION_THRESHOLD = 0.08  # More aggressive noise reduction
-    BORDER_FADE_DISTANCE = 20  # Larger fade distance for smoother edges
+    # Interior feature parameters
+    INTERIOR_OBSTACLE_DENSITY = 0.08  # Density of interior obstacles (increased for more features)
+    MIN_OBSTACLE_SIZE = 5             # Minimum obstacle size in grid cells
+    MAX_OBSTACLE_SIZE = 15            # Maximum obstacle size in grid cells
     
-    # Smoothing parameters for flowing terrain
-    SMOOTHING_ITERATIONS = 5  # More smoothing to eliminate holes and rough edges
-    SMOOTHING_STRENGTH = 0.8  # Higher strength for cleaner terrain
-    EROSION_ITERATIONS = 3  # More erosion to clean up small features
+    # Flow channel parameters
+    FLOW_CHANNEL_COUNT = 3            # Number of major flow channels to create (reduced further)
+    FLOW_CHANNEL_WIDTH_MIN = 8        # Minimum width of flow channels
+    FLOW_CHANNEL_WIDTH_MAX = 15       # Maximum width of flow channels
+    FLOW_CHANNEL_CURVATURE = 0.4      # How curved the flow channels are
+    
+    # Large terrain mass parameters
+    TERRAIN_MASS_COUNT = 4            # Number of large connected terrain masses (increased)
+    TERRAIN_MASS_SIZE_MIN = 12        # Minimum size of terrain masses (increased)
+    TERRAIN_MASS_SIZE_MAX = 25        # Maximum size of terrain masses (increased)
+    
+    # Dead end parameters
+    DEAD_END_PROBABILITY = 0.5        # Probability of creating dead ends
+    DEAD_END_DEPTH_MIN = 6            # Minimum dead end depth in grid cells
+    DEAD_END_DEPTH_MAX = 15           # Maximum dead end depth in grid cells
+    
+    # Connectivity parameters
+    CONNECTIVITY_CHECK_RADIUS = 4     # Radius for connectivity validation
+    MIN_OPEN_SPACE_RATIO = 0.75       # Minimum ratio of open space to total area (mostly terrain)
+
 
 
 class RenderingConfig:
@@ -129,7 +146,7 @@ class RenderingConfig:
     
     # Display settings
     WINDOW_TITLE = "Marble Race Simulation"
-    BACKGROUND_COLOR = (0, 0, 0) 
+    BACKGROUND_COLOR = (0, 0, 0)  # Black background for terrain
     
     # UI elements
     SHOW_FPS = True
@@ -158,6 +175,8 @@ class IndivRaceTerrainConfig(TerrainConfig):
     # Zone placement parameters
     MIN_SPAWN_GOAL_DISTANCE_FACTOR = 0.25  # Minimum distance as fraction of arena diagonal
     ZONE_SEPARATION_BUFFER = 100  # Additional buffer distance in pixels
+    SPAWN_ZONE_RADIUS_MULTIPLIER = 3  # Multiplier for spawn zone size (marble_radius * this value)
+    GOAL_ZONE_RADIUS_MULTIPLIER = 1.5   # Multiplier for goal zone size (marble_radius * this value)
     
 
 

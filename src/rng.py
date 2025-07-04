@@ -95,16 +95,6 @@ def choice(seq):
     return random.choice(seq)
 
 
-def shuffle(seq):
-    """Shuffle a sequence in place"""
-    return random.shuffle(seq)
-
-
-def seed(a=None):
-    """Set the random seed directly (use configure_rng instead for proper configuration)"""
-    return random.seed(a)
-
-
 def random_float() -> float:
     """Generate a random float between 0.0 and 1.0"""
     return random.random()

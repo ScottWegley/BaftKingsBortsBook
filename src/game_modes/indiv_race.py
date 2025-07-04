@@ -5,7 +5,7 @@ Individual race game mode implementation.
 from typing import List, Tuple, Optional
 import math
 from .base import GameResult, Zone
-from .simple_terrain_validator import SimpleTerrainZoneValidator
+from .optimal_terrain_validator import OptimalTerrainValidator
 from terrain.obstacle import FlowingTerrainObstacle
 import rng
 
@@ -19,7 +19,7 @@ class IndivRaceGameMode:
         self.spawn_zone: Optional[Zone] = None
         self.goal_zone: Optional[Zone] = None
         self.winner_marble_id: Optional[int] = None
-        self.validator = SimpleTerrainZoneValidator(arena_width, arena_height)
+        self.validator = OptimalTerrainValidator(arena_width, arena_height)
     
     def validate_and_setup_terrain(self, terrain_obstacles: List[FlowingTerrainObstacle]) -> bool:
         """

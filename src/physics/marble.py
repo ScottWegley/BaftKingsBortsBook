@@ -27,21 +27,11 @@ class Marble:
         self.velocity_x = math.cos(angle) * speed
         self.velocity_y = math.sin(angle) * speed
     
-    def update(self, dt: float, arena_width: int, arena_height: int):
-        """Update marble position and handle boundary collisions"""
-        # Update position
+    def update(self, dt: float):
+        """Update marble position - collision handling is done separately"""
+        # Update position based on current velocity
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
-          # Boundary collisions - bounce off walls while maintaining constant speed
-        if self.x - self.radius <= 0 or self.x + self.radius >= arena_width:
-            self.velocity_x = -self.velocity_x
-            # Clamp position to stay within bounds
-            self.x = max(self.radius, min(arena_width - self.radius, self.x))
-        
-        if self.y - self.radius <= 0 or self.y + self.radius >= arena_height:
-            self.velocity_y = -self.velocity_y
-            # Clamp position to stay within bounds
-            self.y = max(self.radius, min(arena_height - self.radius, self.y))
     
     def _normalize_velocity(self):
         """Ensure velocity magnitude equals the desired speed"""

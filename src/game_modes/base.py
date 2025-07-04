@@ -2,6 +2,7 @@
 Base classes and enums for game modes.
 """
 
+
 from typing import Tuple
 from enum import Enum
 import math

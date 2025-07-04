@@ -7,6 +7,6 @@ and win conditions.
 
 from .base import GameResult, Zone
 from .indiv_race import IndivRaceGameMode
-from .terrain_validator import TerrainZoneValidator
+from .optimal_terrain_validator import OptimalTerrainValidator
 
-__all__ = ['GameResult', 'Zone', 'IndivRaceGameMode', 'TerrainZoneValidator']
+__all__ = ['GameResult', 'Zone', 'IndivRaceGameMode', 'OptimalTerrainValidator']

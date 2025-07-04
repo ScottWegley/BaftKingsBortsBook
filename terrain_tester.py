@@ -226,12 +226,12 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description="Test terrain generation with different RNG seeds")
-    parser.add_argument("--num-seeds", type=int, default=1000, 
+    parser.add_argument("--num-seeds", type=int, default=20, 
                        help="Number of seeds to test (default: 1000)")
     parser.add_argument("--start-seed", type=int, default=None,
                        help="Starting seed value (default: use current timestamp)")
-    parser.add_argument("--output-dir", type=str, default="assets/terrain_tests",
-                       help="Output directory for terrain images (default: assets/terrain_tests)")
+    parser.add_argument("--output-dir", type=str, default="assets/terrain_tests/testX",
+                       help="Output directory for terrain images (default: assets/terrain_tests/testX)")
     parser.add_argument("--arena-width", type=int, default=1280,
                        help="Arena width (default: 1280)")
     parser.add_argument("--arena-height", type=int, default=960,

@@ -6,8 +6,9 @@ from typing import List, Optional, Tuple
 import math
 from config import get_config
 from terrain import FlowingTerrainGenerator
-from physics import Marble, CollisionDetector
-import game_modes
+from physics import Marble
+from physics import CollisionDetector
+from game_modes import IndivRaceGameMode, GameResult
 from .marble_factory import MarbleFactory
 
 
@@ -28,13 +29,13 @@ class SimulationManager:
         self.terrain_complexity = cfg.simulation.TERRAIN_COMPLEXITY
         self.game_mode = game_mode or cfg.simulation.DEFAULT_GAME_MODE
         
-        self.simulation_time = 0.0
+        self.simulation_time = -3.0  # Start timer at -3 for pre-sim pause
         self.game_finished = False
         self.winner_marble_id = None
         
         # Initialize game mode handler
         if self.game_mode == "indiv_race":
-            self.game_mode_handler = game_modes.IndivRaceGameMode(self.arena_width, self.arena_height)
+            self.game_mode_handler = IndivRaceGameMode(self.arena_width, self.arena_height)
         else:
             raise ValueError(f"Unsupported game mode: {self.game_mode}")
         
@@ -97,20 +98,21 @@ class SimulationManager:
             
         self.simulation_time += dt
         
-        # Update all marble positions and boundary collisions
+        # Update all marble positions
         for marble in self.marbles:
-            marble.update(dt, self.arena_width, self.arena_height)
+            marble.update(dt)
         
-        # Handle all terrain collisions centrally
+        # Handle all collisions centrally for better control and accuracy
+        # First handle terrain and boundary collisions
         CollisionDetector.detect_and_resolve_terrain_collisions(
             self.marbles, self.terrain_obstacles, self.arena_width, self.arena_height
         )
         
-        # Handle marble-to-marble collisions
+        # Then handle marble-to-marble collisions
         CollisionDetector.detect_and_resolve_marble_collisions(self.marbles)
           # Check win condition
         result, winner_id = self.game_mode_handler.check_win_condition(self.marbles)
-        if result == game_modes.GameResult.WINNER:
+        if result == GameResult.WINNER:
             self.game_finished = True
             self.winner_marble_id = winner_id
             print(f"Marble {winner_id} wins the race!")

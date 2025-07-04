@@ -1,6 +1,11 @@
 import argparse
 import sys
-from simulation import run_graphics_mode, run_headless_mode
+import os
+
+# Add src directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from simulation.runner import run_graphics_mode, run_headless_mode
 from config import get_config, set_game_mode
 from rng import configure_rng, RNGMode, get_current_seed
 
