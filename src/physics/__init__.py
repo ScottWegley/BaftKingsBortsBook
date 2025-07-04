@@ -3,11 +3,10 @@
 Physics module for the marble race simulation.
 
 This module contains all physics-related classes and functionality,
-including marble physics, collision detection (via pymunk), and physics constants.
+including marble physics and the unified physics engine for collision detection.
 """
 
-
 from .marble import Marble
-from .pymunk_collision import CollisionDetector
+from .engine import PhysicsEngine, get_physics_engine, initialize_physics_engine
 
-__all__ = ['Marble', 'CollisionDetector']
+__all__ = ['Marble', 'PhysicsEngine', 'get_physics_engine', 'initialize_physics_engine']

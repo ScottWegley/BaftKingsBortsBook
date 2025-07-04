@@ -6,8 +6,7 @@ from typing import List, Optional, Tuple
 import math
 from config import get_config
 from terrain import FlowingTerrainGenerator
-from physics import Marble
-from physics import CollisionDetector
+from physics import Marble, initialize_physics_engine, get_physics_engine
 from game_modes import IndivRaceGameMode, GameResult
 from .marble_factory import MarbleFactory
 
@@ -41,6 +40,11 @@ class SimulationManager:
         
         # Generate terrain with validation
         self._generate_valid_terrain(self.terrain_complexity)
+        
+        # Initialize physics engine with terrain
+        self.physics_engine = initialize_physics_engine(
+            self.arena_width, self.arena_height, self.terrain_obstacles
+        )
         
         # Generate distinct colors for each marble
         self.colors = MarbleFactory.generate_colors(self.num_marbles)        
@@ -102,14 +106,8 @@ class SimulationManager:
         for marble in self.marbles:
             marble.update(dt)
         
-        # Handle all collisions centrally for better control and accuracy
-        # First handle terrain and boundary collisions
-        CollisionDetector.detect_and_resolve_terrain_collisions(
-            self.marbles, self.terrain_obstacles, self.arena_width, self.arena_height
-        )
-        
-        # Then handle marble-to-marble collisions
-        CollisionDetector.detect_and_resolve_marble_collisions(self.marbles)
+        # Handle all physics and collisions in one unified update
+        self.physics_engine.update_physics(dt, self.marbles)
           # Check win condition
         result, winner_id = self.game_mode_handler.check_win_condition(self.marbles)
         if result == GameResult.WINNER:

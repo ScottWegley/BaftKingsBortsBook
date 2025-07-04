@@ -7,7 +7,14 @@ and rendering. Different game modes can have their own specific configurations.
 
 from typing import Dict, Any, Tuple
 import os
-from rng import RNGMode
+from enum import Enum
+
+
+class RNGMode(Enum):
+    """Available RNG seeding modes"""
+    DATE = "date"
+    RANDOM = "random" 
+    SET = "set"
 
 
 class RNGConfig:
@@ -62,7 +69,7 @@ class SimulationConfig:
 
     # Marble physics
     MARBLE_RADIUS = 15
-    MARBLE_SPEED = 175  # pixels per second
+    MARBLE_SPEED = 250  # pixels per second
     COLLISION_RESTITUTION = 1.0  # Elastic collisions
     MARBLE_PLACEMENT_BUFFER = 5  # Buffer between marbles and obstacles
     
@@ -84,7 +91,7 @@ class SimulationConfig:
     MARBLE_COLOR_VALUE = 0.9
     
     # Progress reporting
-    HEADLESS_PROGRESS_INTERVAL = 480  # frames between progress reports
+    HEADLESS_PROGRESS_INTERVAL = 1000  # frames between progress reports
 
 
 class TerrainConfig:
@@ -97,9 +104,9 @@ class TerrainConfig:
     BRANCH_COUNT = 3                  # Number of branches off the main path
     ISLAND_COUNT = 6                  # Number of islands to place (in chambers/corridors)
     # Arena dimensions
-    DEFAULT_ARENA_WIDTH = 1408
-    DEFAULT_ARENA_HEIGHT = 792
-    DEFAULT_TERRAIN_COMPLEXITY = 1.0  # 0.0 = borders only, 1.0 = maximum complexity
+    DEFAULT_ARENA_WIDTH = 1920
+    DEFAULT_ARENA_HEIGHT = 1080
+    DEFAULT_TERRAIN_COMPLEXITY = .9  # 0.0 = borders only, 1.0 = maximum complexity
     # Grid resolution for terrain generation
     TERRAIN_GRID_SCALE = 9  # World pixels per grid cell (smaller for higher resolution)
     # Border configuration
@@ -113,14 +120,6 @@ class RenderingConfig:
     # Display settings
     WINDOW_TITLE = "Marble Race Simulation"
     BACKGROUND_COLOR = (0, 0, 0)  # Black background for terrain
-    
-    # UI elements
-    SHOW_FPS = True
-    FPS_COLOR = (0, 0, 0)  # Black text
-    FPS_POSITION = (10, 10)
-      # Marble rendering
-    MARBLE_BORDER_WIDTH = 0  # No border by default
-    MARBLE_BORDER_COLOR = (0, 0, 0)  # Black border if enabled
     
     # Terrain rendering
     TERRAIN_ALPHA = 255  # Fully opaque

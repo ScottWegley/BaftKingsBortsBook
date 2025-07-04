@@ -32,10 +32,3 @@ class Marble:
         # Update position based on current velocity
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
-    
-    def _normalize_velocity(self):
-        """Ensure velocity magnitude equals the desired speed"""
-        current_speed = math.sqrt(self.velocity_x**2 + self.velocity_y**2)
-        if current_speed > 0:
-            self.velocity_x = (self.velocity_x / current_speed) * self.speed
-            self.velocity_y = (self.velocity_y / current_speed) * self.speed

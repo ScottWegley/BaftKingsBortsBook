@@ -16,7 +16,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from config import get_config, set_game_mode
-from rng import configure_rng, RNGMode
+from rng import configure_rng
 from terrain.generator import FlowingTerrainGenerator
 from game_modes.indiv_race import IndivRaceGameMode
 
@@ -51,7 +51,7 @@ class TerrainTester:
         """
         try:
             # Configure RNG with the given seed
-            configure_rng(RNGMode.SET, seed)
+            configure_rng("set", seed)
             
             # Configure game mode to indiv_race
             set_game_mode("indiv_race")
