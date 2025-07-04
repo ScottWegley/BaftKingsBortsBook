@@ -88,9 +88,52 @@ class TerrainConfig:
     # Arena dimensions
     DEFAULT_ARENA_WIDTH = 1280
     DEFAULT_ARENA_HEIGHT = 960
-    DEFAULT_TERRAIN_COMPLEXITY = 0.0  # No terrain, only borders
-    # Border only
+    DEFAULT_TERRAIN_COMPLEXITY = 0.7  # 0.0 = borders only, 1.0 = maximum complexity
+    
+    # Grid resolution for terrain generation
+    TERRAIN_GRID_SCALE = 16  # World pixels per grid cell (even larger for smoother look)
+    
+    # Border configuration
     SOLID_BORDER_WIDTH = 30  # Width of solid border in pixels
+    
+    # Flowing terrain parameters
+    NOISE_SCALE_LARGE = 0.008   # Scale for large terrain features (much slower variation)
+    NOISE_SCALE_MEDIUM = 0.02   # Scale for medium terrain features  
+    NOISE_SCALE_SMALL = 0.05    # Scale for small terrain features
+    
+    # Terrain density and structure
+    BASE_TERRAIN_THRESHOLD = 0.8      # Base threshold for terrain vs open space (much more solid)
+    CORRIDOR_WIDTH_MIN = 4.0          # Minimum corridor width in grid cells
+    CORRIDOR_WIDTH_MAX = 15.0         # Maximum corridor width in grid cells
+    
+    # Edge variation parameters
+    EDGE_VARIATION_STRENGTH = 1.2     # How much borders vary inward/outward (much more variation)
+    EDGE_COMPLEXITY_SCALE = 0.02      # Noise scale for edge variations (slower for smoother curves)
+    
+    # Interior feature parameters
+    INTERIOR_OBSTACLE_DENSITY = 0.08  # Density of interior obstacles (increased for more features)
+    MIN_OBSTACLE_SIZE = 5             # Minimum obstacle size in grid cells
+    MAX_OBSTACLE_SIZE = 15            # Maximum obstacle size in grid cells
+    
+    # Flow channel parameters
+    FLOW_CHANNEL_COUNT = 3            # Number of major flow channels to create (reduced further)
+    FLOW_CHANNEL_WIDTH_MIN = 4        # Minimum width of flow channels
+    FLOW_CHANNEL_WIDTH_MAX = 8        # Maximum width of flow channels
+    FLOW_CHANNEL_CURVATURE = 0.4      # How curved the flow channels are
+    
+    # Large terrain mass parameters
+    TERRAIN_MASS_COUNT = 4            # Number of large connected terrain masses (increased)
+    TERRAIN_MASS_SIZE_MIN = 12        # Minimum size of terrain masses (increased)
+    TERRAIN_MASS_SIZE_MAX = 25        # Maximum size of terrain masses (increased)
+    
+    # Dead end parameters
+    DEAD_END_PROBABILITY = 0.5        # Probability of creating dead ends
+    DEAD_END_DEPTH_MIN = 6            # Minimum dead end depth in grid cells
+    DEAD_END_DEPTH_MAX = 15           # Maximum dead end depth in grid cells
+    
+    # Connectivity parameters
+    CONNECTIVITY_CHECK_RADIUS = 4     # Radius for connectivity validation
+    MIN_OPEN_SPACE_RATIO = 0.15       # Minimum ratio of open space to total area (mostly terrain)
 
 
 
@@ -99,7 +142,7 @@ class RenderingConfig:
     
     # Display settings
     WINDOW_TITLE = "Marble Race Simulation"
-    BACKGROUND_COLOR = (0, 0, 0) 
+    BACKGROUND_COLOR = (80, 180, 80)  # Brighter green background like reference images 
     
     # UI elements
     SHOW_FPS = True
