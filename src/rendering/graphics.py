@@ -53,15 +53,26 @@ class GraphicsRenderer:
                              (int(goal_zone.center_x), int(goal_zone.center_y)), 
                              int(goal_zone.radius), 2)
 
-        # Draw marbles
+        # Draw marbles as characters if available
+        import os
+        from pygame import image, Surface
+        char_list = getattr(self.simulation, 'characters', None)
         for i, marble in enumerate(self.simulation.marbles):
-            pygame.draw.circle(self.screen, marble.color, 
-                             (int(marble.x), int(marble.y)), marble.radius)
-            pygame.draw.circle(self.screen, (255, 255, 255), 
-                             (int(marble.x), int(marble.y)), 2)
+            char = char_list[i] if char_list and i < len(char_list) else None
+            if char:
+                costume = 'default'
+                asset_path = os.path.join('assets', 'characters', char.id, f'{costume}.png')
+                if os.path.exists(asset_path):
+                    char_img = image.load(asset_path).convert_alpha()
+                    char_img = pygame.transform.smoothscale(char_img, (marble.radius*2, marble.radius*2))
+                    self.screen.blit(char_img, (int(marble.x-marble.radius), int(marble.y-marble.radius)))
+                else:
+                    pygame.draw.circle(self.screen, marble.color, (int(marble.x), int(marble.y)), marble.radius)
+            else:
+                pygame.draw.circle(self.screen, marble.color, (int(marble.x), int(marble.y)), marble.radius)
+            pygame.draw.circle(self.screen, (255, 255, 255), (int(marble.x), int(marble.y)), 2)
             if self.simulation.get_winner() == i:
-                pygame.draw.circle(self.screen, (255, 255, 0), 
-                                 (int(marble.x), int(marble.y)), marble.radius + 5, 3)
+                pygame.draw.circle(self.screen, (255, 255, 0), (int(marble.x), int(marble.y)), marble.radius + 5, 3)
 
         # Draw simulation info
         time_text = self.font.render(f"Time: {self.simulation.simulation_time:.1f}s", True, (255, 255, 255))

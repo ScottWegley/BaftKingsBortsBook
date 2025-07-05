@@ -34,9 +34,19 @@ A modular, physics-based simulation of marbles racing on procedurally generated 
 - Required: `pygame`
 - Optional (for advanced terrain): `numpy`, `scipy`, `scikit-image`
 
+
+## Character System
+
+- Marbles are now characters, each with an `id`, `name`, and a list of `costumes` (must include "default").
+- Character assets are stored in `assets/characters/{id}/{costume}.png` (e.g., `assets/characters/redbird/default.png`).
+- The number of marbles is capped at the number of available characters. If more are requested, only as many as there are characters will spawn.
+- To add a character, edit `src/characters.py` and add to the `CHARACTERS` list.
+- Each character image should be a 30x30 PNG (matching the marble's diameter), with the main visual centered and fitting within a 15px radius circle.
+- The marble's collision shape remains a circle; only the visual changes.
+
 ## Extensibility & Customization
 
-- Modular design: Physics, terrain, rendering, and simulation are decoupled for easy extension/testing.
+- Modular design: Physics, terrain, rendering, simulation, and characters are decoupled for easy extension/testing.
 - **Game Modes**: Add new game modes by subclassing the configuration classes and adding logic in `game_modes/`. Register new modes in `config.py`'s `GAME_MODE_CONFIGS`.
 - **Configuration**: All parameters (marble size, speed, terrain complexity, zone placement, etc.) are easily adjustable in `config.py` or at runtime.
 

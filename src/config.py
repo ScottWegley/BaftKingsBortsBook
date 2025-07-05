@@ -29,7 +29,9 @@ class SimulationConfig:
     """Base configuration for marble simulation physics and behavior"""
     
     # Simulation parameters
-    DEFAULT_NUM_MARBLES = 8
+    # DEFAULT_NUM_MARBLES is now set by the number of characters
+    from characters import CHARACTERS
+    DEFAULT_NUM_MARBLES = len(CHARACTERS)
     DEFAULT_GAME_MODE = "indiv_race"  # Default and only game mode for now
     FIXED_TIMESTEP = 1.0 / 60.0  # 60 FPS for headless mode
     GRAPHICS_FPS = 240  # Frames per second for graphics mode
@@ -42,7 +44,12 @@ class SimulationConfig:
     
     @property
     def NUM_MARBLES(self):
-        return self._runtime_num_marbles or self.DEFAULT_NUM_MARBLES
+        # Limit to number of available characters
+        from characters import CHARACTERS
+        max_marbles = len(CHARACTERS)
+        if self._runtime_num_marbles is not None:
+            return min(self._runtime_num_marbles, max_marbles)
+        return max_marbles
     
     @property 
     def ARENA_WIDTH(self):
@@ -68,7 +75,7 @@ class SimulationConfig:
             self._runtime_terrain_complexity = terrain_complexity
 
     # Marble physics
-    MARBLE_RADIUS = 15
+    MARBLE_RADIUS = 24  # Increased from 15 to 24 for larger marbles
     MARBLE_SPEED = 250  # pixels per second
     COLLISION_RESTITUTION = 1.0  # Elastic collisions
     MARBLE_PLACEMENT_BUFFER = 5  # Buffer between marbles and obstacles

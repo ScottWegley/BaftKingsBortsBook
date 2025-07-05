@@ -46,9 +46,11 @@ class SimulationManager:
             self.arena_width, self.arena_height, self.terrain_obstacles
         )
         
-        # Generate distinct colors for each marble
-        self.colors = MarbleFactory.generate_colors(self.num_marbles)        
-        # Initialize marbles using game mode specific spawn positions
+        # Import characters
+        from characters import CHARACTERS
+        self.characters = CHARACTERS[:self.num_marbles]
+        self.colors = MarbleFactory.generate_colors(self.num_marbles)
+        # Initialize marbles using game mode specific spawn positions and assign characters
         self._initialize_marbles()
     
     def _generate_valid_terrain(self, terrain_complexity: float, max_attempts: int = 50):
