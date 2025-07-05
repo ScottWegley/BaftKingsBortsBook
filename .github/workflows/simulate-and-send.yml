@@ -26,14 +26,16 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run simulation
+        env:
+          SDL_AUDIODRIVER: dummy
         run: |
-          python src/main.py --rng-mode random --canon --output --headless
+          python -u src/main.py --rng-mode random --canon --output --headless
 
       - name: Send Discord notification
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
         run: |
-          python send_first_output_to_discord.py
+          python -u send_first_output_to_discord.py
 
       - name: Commit and push results
         run: |
