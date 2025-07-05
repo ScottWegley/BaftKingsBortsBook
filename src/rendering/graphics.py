@@ -81,8 +81,14 @@ class GraphicsRenderer:
         # Draw winner info if game is finished
         if self.simulation.is_finished():
             winner_id = self.simulation.get_winner()
+            winner_name = None
+            if hasattr(self.simulation, 'get_winner_character_name'):
+                winner_name = self.simulation.get_winner_character_name()
             if winner_id is not None:
-                winner_text = self.font.render(f"Marble {winner_id} WINS!", True, (255, 255, 0))
+                if winner_name:
+                    winner_text = self.font.render(f"{winner_name} WINS!", True, (255, 255, 0))
+                else:
+                    winner_text = self.font.render(f"Marble {winner_id} WINS!", True, (255, 255, 0))
                 text_rect = winner_text.get_rect(center=(self.simulation.arena_width // 2, 50))
                 self.screen.blit(winner_text, text_rect)
 

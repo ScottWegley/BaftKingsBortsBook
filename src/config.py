@@ -75,7 +75,7 @@ class SimulationConfig:
             self._runtime_terrain_complexity = terrain_complexity
 
     # Marble physics
-    MARBLE_RADIUS = 24  # Increased from 15 to 24 for larger marbles
+    MARBLE_RADIUS = 30  #
     MARBLE_SPEED = 250  # pixels per second
     COLLISION_RESTITUTION = 1.0  # Elastic collisions
     MARBLE_PLACEMENT_BUFFER = 5  # Buffer between marbles and obstacles
@@ -103,19 +103,19 @@ class SimulationConfig:
 
 class TerrainConfig:
     # Organic track generator parameters (used by the new generator)
-    MIN_PATH_WIDTH = 10              # Minimum width of main path (grid cells)
-    MAX_PATH_WIDTH = 10               # Maximum width of main path (grid cells)
+    MIN_PATH_WIDTH = 15              # Minimum width of main path (grid cells)
+    MAX_PATH_WIDTH = 15               # Maximum width of main path (grid cells)
     CHAMBER_COUNT = 4                 # Number of chambers along the main path
     CHAMBER_RADIUS_MIN = 6            # Minimum chamber radius (grid cells)
     CHAMBER_RADIUS_MAX = 12           # Maximum chamber radius (grid cells)
-    BRANCH_COUNT = 3                  # Number of branches off the main path
+    BRANCH_COUNT = 2                  # Number of branches off the main path
     ISLAND_COUNT = 6                  # Number of islands to place (in chambers/corridors)
     # Arena dimensions
     DEFAULT_ARENA_WIDTH = 1920
     DEFAULT_ARENA_HEIGHT = 1080
-    DEFAULT_TERRAIN_COMPLEXITY = .9  # 0.0 = borders only, 1.0 = maximum complexity
+    DEFAULT_TERRAIN_COMPLEXITY = 1.0  # 0.0 = borders only, 1.0 = maximum complexity
     # Grid resolution for terrain generation
-    TERRAIN_GRID_SCALE = 9  # World pixels per grid cell (smaller for higher resolution)
+    TERRAIN_GRID_SCALE = 8  # World pixels per grid cell (smaller for higher resolution)
     # Border configuration
     SOLID_BORDER_WIDTH = 150  # Width of solid border in pixels
 

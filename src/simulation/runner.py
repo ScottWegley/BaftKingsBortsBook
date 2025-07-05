@@ -14,8 +14,8 @@ from rng import get_current_seed
 from enum import Enum
 
 
-def _save_simulation_results(args, simulation_time: float, winner_marble_id: int):
-    """Save simulation results to file"""
+def _save_simulation_results(args, simulation_time: float, winner_marble_id: int, simulation=None):
+    """Save simulation results to file. Pass simulation instance to avoid re-instantiating."""
     # Determine output directory
     if hasattr(args, 'canon') and args.canon:
         output_dir = "results/canon"
@@ -38,12 +38,19 @@ def _save_simulation_results(args, simulation_time: float, winner_marble_id: int
         else:
             cmd_args[arg_name] = arg_value
     
+    # Get winner character id if possible, using the provided simulation instance
+    winner_character_id = None
+    if simulation is not None and winner_marble_id is not None and hasattr(simulation, 'characters') and winner_marble_id < len(simulation.characters):
+        char = simulation.characters[winner_marble_id]
+        if char:
+            winner_character_id = char.id
     # Create results data
     results = {
         "timestamp": datetime.now().isoformat(),
         "command_line_arguments": cmd_args,
         "rng_seed": get_current_seed(),
         "winning_marble": winner_marble_id,
+        "winning_character_id": winner_character_id,
         "simulation_length_seconds": round(simulation_time, 2)
     }
     
@@ -88,6 +95,7 @@ def run_graphics_mode(args=None):
     # --- Main simulation loop ---
 
 
+
     while running and not simulation.is_finished():
         frame_dt = renderer.get_dt()
         accumulator += frame_dt
@@ -103,12 +111,24 @@ def run_graphics_mode(args=None):
         # Render at display frame rate
         renderer.render()
 
+    # Freeze and show victory message for 3 seconds after win
+    if simulation.is_finished():
+        freeze_seconds = 3.0
+        freeze_time = 0.0
+        while freeze_time < freeze_seconds:
+            frame_dt = renderer.get_dt()
+            freeze_time += frame_dt
+            renderer.render()
+            # Allow quit/ESC during freeze
+            if not renderer.handle_events():
+                break
+
     pygame.quit()
     print(f"Simulation ended after {simulation.simulation_time:.2f} seconds")
 
     # Save results if args provided
     if args is not None and simulation.get_winner() is not None:
-        _save_simulation_results(args, simulation.simulation_time, simulation.get_winner())
+        _save_simulation_results(args, simulation.simulation_time, simulation.get_winner(), simulation)
 
 
 def run_headless_mode(args=None):
@@ -138,4 +158,4 @@ def run_headless_mode(args=None):
     
     # Save results if args provided
     if args is not None and simulation.get_winner() is not None:
-        _save_simulation_results(args, simulation.simulation_time, simulation.get_winner())
+        _save_simulation_results(args, simulation.simulation_time, simulation.get_winner(), simulation)

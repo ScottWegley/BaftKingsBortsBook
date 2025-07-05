@@ -16,14 +16,14 @@ class Character:
 
 
 CHARACTERS = [
-    Character(id='ENT0000', name='ENT0000', costumes=['default']),
-    Character(id='ENT0001', name='ENT0001', costumes=['default']),
-    Character(id='ENT0002', name='ENT0002', costumes=['default']),
-    Character(id='ENT0003', name='ENT0003', costumes=['default']),
-    Character(id='ENT0004', name='ENT0004', costumes=['default']),
-    Character(id='ENT0005', name='ENT0005', costumes=['default']),
-    Character(id='ENT0006', name='ENT0006', costumes=['default']),
-    Character(id='ENT0007', name='ENT0007', costumes=['default']),
+    Character(id='ENT0000', name='CIGARETTE SAIL', costumes=['default']),
+    Character(id='ENT0001', name='GLOW PROSPER', costumes=['default']),
+    Character(id='ENT0002', name='FINANCE INSTINCT', costumes=['default']),
+    Character(id='ENT0003', name='SLANT VEGETARIAN', costumes=['default']),
+    Character(id='ENT0004', name='PIANO BOOM', costumes=['default']),
+    Character(id='ENT0005', name='BUBBLE COLLECTION', costumes=['default']),
+    Character(id='ENT0006', name='VIRGIN WHIP', costumes=['default']),
+    Character(id='ENT0007', name='COW PARTNER', costumes=['default']),
 ]
 
 def get_character_by_id(char_id: str) -> Character:

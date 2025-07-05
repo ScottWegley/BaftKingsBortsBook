@@ -115,7 +115,12 @@ class SimulationManager:
         if result == GameResult.WINNER:
             self.game_finished = True
             self.winner_marble_id = winner_id
-            print(f"Marble {winner_id} wins the race!")
+            # Print winner using character id if available
+            char = self.characters[winner_id] if hasattr(self, 'characters') and winner_id < len(self.characters) else None
+            if char:
+                print(f"Character {char.id} wins the race!")
+            else:
+                print(f"Marble {winner_id} wins the race!")
     
     def is_finished(self) -> bool:
         """Check if simulation should end"""
@@ -124,6 +129,18 @@ class SimulationManager:
     def get_winner(self) -> Optional[int]:
         """Get the winner marble ID if game is finished"""
         return self.winner_marble_id
+
+    def get_winner_character(self):
+        """Get the winner's character object if available"""
+        if self.winner_marble_id is not None and hasattr(self, 'characters'):
+            if 0 <= self.winner_marble_id < len(self.characters):
+                return self.characters[self.winner_marble_id]
+        return None
+
+    def get_winner_character_name(self):
+        """Get the winner's character name if available"""
+        char = self.get_winner_character()
+        return char.name if char else None
     
     def get_zones(self) -> Tuple:
         """Get game mode zones for rendering"""
