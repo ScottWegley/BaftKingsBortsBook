@@ -25,11 +25,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run simulation and capture all output
+      - name: Run simulation
         env:
           SDL_AUDIODRIVER: dummy
         run: |
-          python -u src/main.py --rng-mode random --canon --output --headless 2>&1
+          python -u src/main.py --rng-mode random --canon --output --headless
 
       - name: Send Discord notification
         env:
