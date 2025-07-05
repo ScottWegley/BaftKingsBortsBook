@@ -40,10 +40,12 @@ def _save_simulation_results(args, simulation_time: float, winner_marble_id: int
     
     # Get winner character id if possible, using the provided simulation instance
     winner_character_id = None
+    winner_character_name = None
     if simulation is not None and winner_marble_id is not None and hasattr(simulation, 'characters') and winner_marble_id < len(simulation.characters):
         char = simulation.characters[winner_marble_id]
         if char:
             winner_character_id = char.id
+            winner_character_name = getattr(char, 'name', None)
     # Create results data
     results = {
         "timestamp": datetime.now().isoformat(),
@@ -51,6 +53,7 @@ def _save_simulation_results(args, simulation_time: float, winner_marble_id: int
         "rng_seed": get_current_seed(),
         "winning_marble": winner_marble_id,
         "winning_character_id": winner_character_id,
+        "winning_character_name": winner_character_name,
         "simulation_length_seconds": round(simulation_time, 2)
     }
     
@@ -82,7 +85,17 @@ def run_graphics_mode(args=None):
     # Video recording setup
     video_recorder = None
     cfg = get_config()
+    # If output is requested, clear any existing mp4 files in output dir first
     if hasattr(args, 'output') and args.output:
+        # Always use project root/output
+        output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'output'))
+        if os.path.exists(output_dir):
+            for f in os.listdir(output_dir):
+                if f.lower().endswith('.mp4'):
+                    try:
+                        os.remove(os.path.join(output_dir, f))
+                    except Exception as e:
+                        print(f"Warning: Could not delete {f}: {e}")
         from rendering.video_recorder import VideoRecorder
         video_fps = getattr(cfg.simulation, 'VIDEO_FPS', 60)
         video_recorder = VideoRecorder(simulation.arena_width, simulation.arena_height, output_dir="output", fps=video_fps)
@@ -166,7 +179,17 @@ def run_headless_mode(args=None):
 
     # Video recording setup
     video_recorder = None
+    # If output is requested, clear any existing mp4 files in output dir first
     if hasattr(args, 'output') and args.output:
+        # Always use project root/output
+        output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'output'))
+        if os.path.exists(output_dir):
+            for f in os.listdir(output_dir):
+                if f.lower().endswith('.mp4'):
+                    try:
+                        os.remove(os.path.join(output_dir, f))
+                    except Exception as e:
+                        print(f"Warning: Could not delete {f}: {e}")
         from rendering.video_recorder import VideoRecorder
         video_fps = getattr(cfg.simulation, 'VIDEO_FPS', 60)
         video_recorder = VideoRecorder(simulation.arena_width, simulation.arena_height, output_dir="output", fps=video_fps)

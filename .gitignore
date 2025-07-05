@@ -15,3 +15,5 @@
 **/assets/terrain_tests/**
  
 **/__pycache__/*
+.env
+**/output/*.mp4

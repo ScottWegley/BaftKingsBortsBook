@@ -3,3 +3,7 @@ numpy>=1.21.0
 scipy>=1.7.0
 scikit-image>=0.18.0
 pymunk>=6.2.0
+requests>=2.0.0
+python-dotenv>=0.21.0
+imageio[ffmpeg]>=2.9.0
+moviepy>=1.0.0
