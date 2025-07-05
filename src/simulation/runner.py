@@ -18,14 +18,14 @@ def _save_simulation_results(args, simulation_time: float, winner_marble_id: int
     """Save simulation results to file. Pass simulation instance to avoid re-instantiating."""
     # Determine output directory
     if hasattr(args, 'canon') and args.canon:
-        output_dir = "results/canon"
+        output_dir = os.path.join("results", "canon")
     else:
-        output_dir = "results/misc"
-    
-    # Ensure directory exists
+        output_dir = os.path.join("results", "misc")
+
+    # Ensure directory exists (relative path)
     os.makedirs(output_dir, exist_ok=True)
-    
-    # Create filename with timestamp
+
+    # Create filename with timestamp (relative path)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"simulation_results_{timestamp}.json"
     filepath = os.path.join(output_dir, filename)
