@@ -23,11 +23,13 @@ A modular, physics-based simulation of marbles racing on procedurally generated 
 - **Zones**: Spawn/goal zones are placed and validated for clear paths and fair starts/goals using exhaustive search and wave simulation.
 - **Simulation**: Supports both real-time graphics and fast headless execution. Results and progress can be saved and analyzed.
 
+
 ## Usage
 
 - CLI options: number of marbles, terrain complexity, arena size, execution mode, RNG seed/mode.
 - Game mode can be set at runtime; configuration is accessible via `get_config()` and can be changed with `set_game_mode()`.
 - Results and simulation progress can be saved for later analysis.
+- `--output` saves a video (MP4) of the simulation to the output folder. GIF output is no longer supported.
 
 ## Dependencies
 

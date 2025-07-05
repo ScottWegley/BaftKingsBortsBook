@@ -90,6 +90,10 @@ class GraphicsRenderer:
                 else:
                     winner_text = self.font.render(f"Marble {winner_id} WINS!", True, (255, 255, 0))
                 text_rect = winner_text.get_rect(center=(self.simulation.arena_width // 2, 50))
+                # Draw black rectangle background behind the text
+                padding = 16
+                bg_rect = text_rect.inflate(padding, padding)
+                pygame.draw.rect(self.screen, (0, 0, 0), bg_rect)
                 self.screen.blit(winner_text, text_rect)
 
         pygame.display.flip()
