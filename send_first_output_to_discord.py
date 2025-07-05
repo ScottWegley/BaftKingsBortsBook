@@ -103,3 +103,15 @@ if winner_name:
         print(f'Failed to send winner embed. Status: {response3.status_code}, Response: {response3.text}')
 else:
     print("No winner name found in results JSON.")
+
+# 4. Clean up: delete MP4 files from output directory
+print("Cleaning up MP4 files from output directory...")
+try:
+    for mp4_file in mp4_files:
+        mp4_path = os.path.join(output_dir, mp4_file)
+        if os.path.exists(mp4_path):
+            os.remove(mp4_path)
+            print(f"Deleted: {mp4_file}")
+    print("MP4 cleanup completed successfully!")
+except Exception as e:
+    print(f"Error during MP4 cleanup: {e}")
