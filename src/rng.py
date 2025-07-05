@@ -9,20 +9,13 @@ import random
 import time
 from datetime import date
 from typing import Optional, Literal
-from enum import Enum
 
 
-class RNGMode(Enum):
-    """Available RNG seeding modes"""
-    DATE = "date"
-    RANDOM = "random" 
-    SET = "set"
-
-
+# Import RNGMode from config to avoid circular imports, we'll handle this differently
 class RNGConfig:
     """Configuration for random number generation"""
     
-    def __init__(self, mode: RNGMode = RNGMode.RANDOM, seed_value: Optional[int] = None):
+    def __init__(self, mode: str = "random", seed_value: Optional[int] = None):
         self.mode = mode
         self.seed_value = seed_value
         self._current_seed = None
@@ -30,14 +23,14 @@ class RNGConfig:
     
     def _initialize_seed(self):
         """Initialize the random seed based on the configured mode"""
-        if self.mode == RNGMode.DATE:
+        if self.mode == "date":
             # Use current date as seed (YYYYMMDD format)
             today = date.today()
             self._current_seed = int(today.strftime("%Y%m%d"))
-        elif self.mode == RNGMode.RANDOM:
+        elif self.mode == "random":
             # Use current unix timestamp
             self._current_seed = int(time.time())
-        elif self.mode == RNGMode.SET:
+        elif self.mode == "set":
             # Use user-provided seed value
             if self.seed_value is None:
                 raise ValueError("RNG mode 'set' requires a seed_value to be provided")
@@ -61,7 +54,7 @@ class RNGConfig:
 _rng_config = RNGConfig()
 
 
-def configure_rng(mode: RNGMode, seed_value: Optional[int] = None):
+def configure_rng(mode: str, seed_value: Optional[int] = None):
     """Configure the global RNG settings"""
     global _rng_config
     _rng_config = RNGConfig(mode, seed_value)

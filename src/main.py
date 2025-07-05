@@ -6,8 +6,8 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from simulation.runner import run_graphics_mode, run_headless_mode
-from config import get_config, set_game_mode
-from rng import configure_rng, RNGMode, get_current_seed
+from config import get_config, set_game_mode, RNGMode
+from rng import configure_rng, get_current_seed
 
 
 def main():
@@ -30,7 +30,7 @@ def main():
     parser.add_argument("--arena-height", type=int, default=cfg.terrain.DEFAULT_ARENA_HEIGHT,
                        help=f"Arena height in pixels (default: {cfg.terrain.DEFAULT_ARENA_HEIGHT})")    
     parser.add_argument("--rng-mode", type=str, choices=["date", "random", "set"], 
-                       default=cfg.rng.DEFAULT_RNG_MODE, help="RNG seed mode: 'date' uses current date, 'random' uses timestamp, 'set' uses --rng-value")
+                       default=cfg.rng.DEFAULT_RNG_MODE.value, help="RNG seed mode: 'date' uses current date, 'random' uses timestamp, 'set' uses --rng-value")
     parser.add_argument("--rng-value", type=int, 
                        help="Seed value to use when --rng-mode is 'set'")
     parser.add_argument("--canon", action="store_true", 
@@ -43,8 +43,8 @@ def main():
         cfg = get_config()  # Get updated config
     
     # Configure RNG based on command line arguments
-    rng_mode = RNGMode(args.rng_mode)
-    if rng_mode == RNGMode.SET and args.rng_value is None:
+    rng_mode = args.rng_mode
+    if rng_mode == "set" and args.rng_value is None:
         print("Error: --rng-mode set requires --rng-value to be specified")
         sys.exit(1)
     

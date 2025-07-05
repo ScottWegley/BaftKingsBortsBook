@@ -54,9 +54,11 @@ class MarbleFactory:
     @staticmethod
     def create_marbles(num_marbles: int, marble_radius: float, marble_speed: float, 
                       arena_width: int, arena_height: int, terrain_obstacles: List,
-                      colors: List[Tuple[int, int, int]]) -> List[Marble]:
-        """Create marbles with random positions that don't overlap with terrain"""
+                      colors: List[Tuple[int, int, int]], characters=None) -> List[Marble]:
+        """Create marbles with random positions that don't overlap with terrain. Assigns characters if provided."""
         marbles = []
+        if characters is not None:
+            num_marbles = min(num_marbles, len(characters))
         
         for i in range(num_marbles):
             attempts = 0

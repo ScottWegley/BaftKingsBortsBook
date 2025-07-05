@@ -7,7 +7,14 @@ and rendering. Different game modes can have their own specific configurations.
 
 from typing import Dict, Any, Tuple
 import os
-from rng import RNGMode
+from enum import Enum
+
+
+class RNGMode(Enum):
+    """Available RNG seeding modes"""
+    DATE = "date"
+    RANDOM = "random" 
+    SET = "set"
 
 
 class RNGConfig:
@@ -22,7 +29,9 @@ class SimulationConfig:
     """Base configuration for marble simulation physics and behavior"""
     
     # Simulation parameters
-    DEFAULT_NUM_MARBLES = 8
+    # DEFAULT_NUM_MARBLES is now set by the number of characters
+    from characters import CHARACTERS
+    DEFAULT_NUM_MARBLES = len(CHARACTERS)
     DEFAULT_GAME_MODE = "indiv_race"  # Default and only game mode for now
     FIXED_TIMESTEP = 1.0 / 60.0  # 60 FPS for headless mode
     GRAPHICS_FPS = 240  # Frames per second for graphics mode
@@ -35,7 +44,12 @@ class SimulationConfig:
     
     @property
     def NUM_MARBLES(self):
-        return self._runtime_num_marbles or self.DEFAULT_NUM_MARBLES
+        # Limit to number of available characters
+        from characters import CHARACTERS
+        max_marbles = len(CHARACTERS)
+        if self._runtime_num_marbles is not None:
+            return min(self._runtime_num_marbles, max_marbles)
+        return max_marbles
     
     @property 
     def ARENA_WIDTH(self):
@@ -61,8 +75,8 @@ class SimulationConfig:
             self._runtime_terrain_complexity = terrain_complexity
 
     # Marble physics
-    MARBLE_RADIUS = 15
-    MARBLE_SPEED = 175  # pixels per second
+    MARBLE_RADIUS = 30  #
+    MARBLE_SPEED = 250  # pixels per second
     COLLISION_RESTITUTION = 1.0  # Elastic collisions
     MARBLE_PLACEMENT_BUFFER = 5  # Buffer between marbles and obstacles
     
@@ -84,24 +98,24 @@ class SimulationConfig:
     MARBLE_COLOR_VALUE = 0.9
     
     # Progress reporting
-    HEADLESS_PROGRESS_INTERVAL = 480  # frames between progress reports
+    HEADLESS_PROGRESS_INTERVAL = 1000  # frames between progress reports
 
 
 class TerrainConfig:
     # Organic track generator parameters (used by the new generator)
-    MIN_PATH_WIDTH = 10              # Minimum width of main path (grid cells)
-    MAX_PATH_WIDTH = 10               # Maximum width of main path (grid cells)
+    MIN_PATH_WIDTH = 15              # Minimum width of main path (grid cells)
+    MAX_PATH_WIDTH = 15               # Maximum width of main path (grid cells)
     CHAMBER_COUNT = 4                 # Number of chambers along the main path
     CHAMBER_RADIUS_MIN = 6            # Minimum chamber radius (grid cells)
     CHAMBER_RADIUS_MAX = 12           # Maximum chamber radius (grid cells)
-    BRANCH_COUNT = 3                  # Number of branches off the main path
+    BRANCH_COUNT = 2                  # Number of branches off the main path
     ISLAND_COUNT = 6                  # Number of islands to place (in chambers/corridors)
     # Arena dimensions
-    DEFAULT_ARENA_WIDTH = 1408
-    DEFAULT_ARENA_HEIGHT = 792
+    DEFAULT_ARENA_WIDTH = 1920
+    DEFAULT_ARENA_HEIGHT = 1080
     DEFAULT_TERRAIN_COMPLEXITY = 1.0  # 0.0 = borders only, 1.0 = maximum complexity
     # Grid resolution for terrain generation
-    TERRAIN_GRID_SCALE = 9  # World pixels per grid cell (smaller for higher resolution)
+    TERRAIN_GRID_SCALE = 8  # World pixels per grid cell (smaller for higher resolution)
     # Border configuration
     SOLID_BORDER_WIDTH = 150  # Width of solid border in pixels
 
@@ -113,14 +127,6 @@ class RenderingConfig:
     # Display settings
     WINDOW_TITLE = "Marble Race Simulation"
     BACKGROUND_COLOR = (0, 0, 0)  # Black background for terrain
-    
-    # UI elements
-    SHOW_FPS = True
-    FPS_COLOR = (0, 0, 0)  # Black text
-    FPS_POSITION = (10, 10)
-      # Marble rendering
-    MARBLE_BORDER_WIDTH = 0  # No border by default
-    MARBLE_BORDER_COLOR = (0, 0, 0)  # Black border if enabled
     
     # Terrain rendering
     TERRAIN_ALPHA = 255  # Fully opaque
