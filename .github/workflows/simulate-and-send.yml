@@ -1,0 +1,45 @@
+name: Simulate and Send Discord Notification
+
+on:
+  workflow_dispatch:
+    inputs:
+      custom_message:
+        description: 'Optional custom message to include'
+        required: false
+        default: ''
+
+jobs:
+  simulate-and-send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run simulation
+        run: |
+          python src/main.py --rng-mode random --canon --output --headless
+
+      - name: Send Discord notification
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: |
+          python send_first_output_to_discord.py
+
+      - name: Commit and push results
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          DATE=$(date '+%Y-%m-%d')
+          git add results/ output/ || true
+          git commit -m "Ran event for $DATE" || echo "No changes to commit"
+          git push || echo "No changes to push"
