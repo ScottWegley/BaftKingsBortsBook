@@ -100,7 +100,7 @@ class SimulationConfig:
     MARBLE_COLOR_VALUE = 0.9
     
     # Progress reporting
-    HEADLESS_PROGRESS_INTERVAL = 1000  # frames between progress reports
+    HEADLESS_PROGRESS_INTERVAL = 300  # frames between progress reports
 
 
 class TerrainConfig:

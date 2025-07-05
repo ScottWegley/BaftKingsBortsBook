@@ -70,7 +70,7 @@ class GraphicsRenderer:
                     pygame.draw.circle(self.screen, marble.color, (int(marble.x), int(marble.y)), marble.radius)
             else:
                 pygame.draw.circle(self.screen, marble.color, (int(marble.x), int(marble.y)), marble.radius)
-            pygame.draw.circle(self.screen, (255, 255, 255), (int(marble.x), int(marble.y)), 2)
+            # pygame.draw.circle(self.screen, (255, 255, 255), (int(marble.x), int(marble.y)), 2)  # Removed white dot at marble center
             if self.simulation.get_winner() == i:
                 pygame.draw.circle(self.screen, (255, 255, 0), (int(marble.x), int(marble.y)), marble.radius + 5, 3)
 

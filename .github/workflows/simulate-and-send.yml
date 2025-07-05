@@ -3,10 +3,10 @@ name: Simulate and Send Discord Notification
 on:
   workflow_dispatch:
     inputs:
-      custom_message:
-        description: 'Optional custom message to include'
+      simulation_command:
+        description: 'python -u src/main.py --canon --output --headless --rng-mode'
         required: false
-        default: ''
+        default: 'python -u src/main.py --rng-mode date --canon --output --headless'
 
 jobs:
   simulate-and-send:
@@ -29,7 +29,7 @@ jobs:
         env:
           SDL_AUDIODRIVER: dummy
         run: |
-          python -u src/main.py --rng-mode random --canon --output --headless
+          ${{ github.event.inputs.simulation_command }}
 
       - name: Send Discord notification
         env:
