@@ -26,6 +26,8 @@ class RNGConfig:
 
 
 class SimulationConfig:
+    # Video output configuration
+    VIDEO_FPS = 60  # Target frames per second for video output
     """Base configuration for marble simulation physics and behavior"""
     
     # Simulation parameters

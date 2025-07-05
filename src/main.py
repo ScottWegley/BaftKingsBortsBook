@@ -35,6 +35,7 @@ def main():
                        help="Seed value to use when --rng-mode is 'set'")
     parser.add_argument("--canon", action="store_true", 
                        help="Save results to /results/canon instead of /results/misc")
+    parser.add_argument("--output", action="store_true", help="If set, saves a video (MP4) of the simulation to the output folder.")
     args = parser.parse_args()
     
     # Activate the selected game mode
