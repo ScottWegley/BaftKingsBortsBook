@@ -25,14 +25,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Install cpulimit
-        run: sudo apt-get update && sudo apt-get install -y cpulimit
-
-      - name: Run simulation with CPU limit and capture all output
+      - name: Run simulation and capture all output
         env:
           SDL_AUDIODRIVER: dummy
         run: |
-          cpulimit -l 95 -- python -u src/main.py --rng-mode random --canon --output --headless 2>&1
+          python -u src/main.py --rng-mode random --canon --output --headless 2>&1
 
       - name: Send Discord notification
         env:

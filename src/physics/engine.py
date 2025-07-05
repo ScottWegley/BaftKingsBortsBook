@@ -128,8 +128,10 @@ class PhysicsEngine:
         # Step the physics simulation
         self.space.step(dt)
         
-        # Check for stuck bouncing patterns and add variation if needed
-        self._check_and_fix_stuck_bouncing()
+        # Check for stuck bouncing patterns less frequently for better performance
+        self._frame_counter = getattr(self, '_frame_counter', 0) + 1
+        if self._frame_counter % 10 == 0:  # Check every 10 frames instead of every frame
+            self._check_and_fix_stuck_bouncing()
         
         # Restore constant speeds and sync back to marble objects
         for body, marble in self.body_to_marble.items():
