@@ -3,7 +3,8 @@ Terrain obstacle classes for collision detection and rendering.
 """
 
 import math
-from typing import List, Tuple
+from typing import List, Tuple, Union
+import numpy as np
 import pygame
 
 # Import pymunk for physics integration
@@ -17,14 +18,18 @@ except ImportError:
 class FlowingTerrainObstacle:
     """Flowing terrain obstacle using height field"""
     
-    def __init__(self, height_field: List[List[float]], threshold: float, scale_x: float, scale_y: float, base_color: Tuple[int, int, int] = (100, 100, 100)):
-        self.height_field = height_field
+    def __init__(self, height_field: Union[List[List[float]], np.ndarray], threshold: float, scale_x: float, scale_y: float, base_color: Tuple[int, int, int] = (100, 100, 100)):
+        # Convert to numpy array if it's a list
+        if isinstance(height_field, list):
+            self.height_field = np.array(height_field, dtype=np.float32)
+        else:
+            self.height_field = height_field
         self.threshold = threshold
         self.scale_x = scale_x
         self.scale_y = scale_y
         self.base_color = base_color
-        self.grid_height = len(height_field)
-        self.grid_width = len(height_field[0]) if height_field else 0
+        self.grid_height = self.height_field.shape[0]
+        self.grid_width = self.height_field.shape[1]
     
     def check_collision(self, marble_x: float, marble_y: float, marble_radius: float) -> bool:
         """Check collision with flowing terrain using comprehensive sampling"""
