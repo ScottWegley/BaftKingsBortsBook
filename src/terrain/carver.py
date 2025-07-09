@@ -4,7 +4,8 @@ Terrain carving operations for creating paths and chambers.
 
 import math
 
-from typing import List, Tuple
+from typing import List, Tuple, Union
+import numpy as np
 import rng
 from config import get_config
 from .noise import NoiseGenerator
@@ -18,7 +19,7 @@ class TerrainCarver:
         self.grid_height = grid_height
         self.cfg = get_config().terrain
     
-    def carve_flow_channels(self, height_field: List[List[float]], complexity: float):
+    def carve_flow_channels(self, height_field: np.ndarray, complexity: float):
         """Create major flow channels through the terrain"""
         if complexity < 0.2:
             return
@@ -41,7 +42,7 @@ class TerrainCarver:
             
             self._carve_curved_path(height_field, start_x, start_y, end_x, end_y, channel_width)
     
-    def carve_interior_chambers(self, height_field: List[List[float]], complexity: float):
+    def carve_interior_chambers(self, height_field: np.ndarray, complexity: float):
         """Create interior chambers with better connectivity"""
         num_chambers = int(self.cfg.INTERIOR_OBSTACLE_DENSITY * complexity * 
                           self.grid_width * self.grid_height * 0.03)  # Fewer, larger chambers
@@ -61,7 +62,7 @@ class TerrainCarver:
             else:
                 self._carve_elongated_area(height_field, x, y, size)
     
-    def create_solid_borders(self, height_field: List[List[float]]):
+    def create_solid_borders(self, height_field: np.ndarray):
         """Create solid borders around the terrain"""
         border_width = max(2, self.cfg.SOLID_BORDER_WIDTH // self.cfg.TERRAIN_GRID_SCALE)
         
@@ -92,7 +93,7 @@ class TerrainCarver:
         else:  # right
             return (self.grid_width - 1, rng.randint(margin, self.grid_height - margin))
     
-    def _carve_curved_path(self, height_field: List[List[float]], 
+    def _carve_curved_path(self, height_field: np.ndarray, 
                           start_x: int, start_y: int, end_x: int, end_y: int, width: float):
         """Carve a gently curved path between two points"""
         # Simple curved path with one control point
@@ -121,7 +122,7 @@ class TerrainCarver:
             # Simple circular carving without width variation
             self._carve_circular_area(height_field, x, y, width / 2)
     
-    def _carve_circular_area(self, height_field: List[List[float]], 
+    def _carve_circular_area(self, height_field: np.ndarray, 
                             center_x: float, center_y: float, radius: float):
         """Carve out a circular area with smooth edges"""
         radius_int = int(radius)
@@ -141,7 +142,7 @@ class TerrainCarver:
                         # Smooth edge transition
                         height_field[y][x] = min(height_field[y][x], 0.3)
     
-    def _carve_elongated_area(self, height_field: List[List[float]], 
+    def _carve_elongated_area(self, height_field: np.ndarray, 
                              center_x: int, center_y: int, size: int):
         """Carve an elongated chamber"""
         angle = rng.uniform(0, 2 * math.pi)

@@ -3,7 +3,8 @@ Simplified height field generation for cave-like terrain.
 """
 
 
-from typing import List, Tuple
+from typing import List, Tuple, Union
+import numpy as np
 import rng
 from config import get_config
 from .noise import NoiseGenerator
@@ -25,13 +26,13 @@ class CaveTerrainGenerator:
         
         self.carver = TerrainCarver(self.grid_width, self.grid_height)
     
-    def generate(self) -> List[List[float]]:
+    def generate(self) -> np.ndarray:
         """Generate organic, continuous terrain with chambers, corridors, branches, and islands (comprehensive update)."""
         if self.complexity <= 0.0:
             return self._generate_border_only()
 
         # --- 1. Start with solid terrain ---
-        height_field = [[1.0 for _ in range(self.grid_width)] for _ in range(self.grid_height)]
+        height_field = np.ones((self.grid_height, self.grid_width), dtype=np.float32)
         self.carver.create_solid_borders(height_field)
 
         # --- 2. Carve main winding path (smooth drunken walk) ---
@@ -319,9 +320,9 @@ class CaveTerrainGenerator:
                         if 1 <= nx < self.grid_width - 1 and 1 <= ny < self.grid_height - 1:
                             height_field[ny][nx] = 1.0
     
-    def _create_base_solid_terrain(self) -> List[List[float]]:
+    def _create_base_solid_terrain(self) -> np.ndarray:
         """Create base terrain that's mostly solid with some natural variation"""
-        height_field = [[1.0 for _ in range(self.grid_width)] for _ in range(self.grid_height)]
+        height_field = np.ones((self.grid_height, self.grid_width), dtype=np.float32)
         
         # Use noise to create larger, more connected natural chambers
         for y in range(self.grid_height):
@@ -343,7 +344,7 @@ class CaveTerrainGenerator:
         
         return height_field
     
-    def _ensure_basic_connectivity(self, height_field: List[List[float]]) -> List[List[float]]:
+    def _ensure_basic_connectivity(self, height_field: np.ndarray) -> np.ndarray:
         """Ensure there's good connectivity with variety in patterns"""
         # Randomly choose connectivity pattern to avoid the repetitive cross
         connectivity_pattern = rng.random_float()
@@ -369,7 +370,7 @@ class CaveTerrainGenerator:
         
         return height_field
     
-    def _create_horizontal_corridor(self, height_field: List[List[float]]):
+    def _create_horizontal_corridor(self, height_field: np.ndarray):
         """Create a single horizontal corridor with gentle curves"""
         mid_y = self.grid_height // 2
         
@@ -388,7 +389,7 @@ class CaveTerrainGenerator:
                 if 0 <= corridor_y < self.grid_height:
                     height_field[corridor_y][x] = 0.0
     
-    def _create_vertical_corridor(self, height_field: List[List[float]]):
+    def _create_vertical_corridor(self, height_field: np.ndarray):
         """Create a single vertical corridor with gentle curves"""
         mid_x = self.grid_width // 2
         
@@ -405,7 +406,7 @@ class CaveTerrainGenerator:
                 if 0 <= final_x < self.grid_width:
                     height_field[y][final_x] = 0.0
     
-    def _create_cross_pattern(self, height_field: List[List[float]]):
+    def _create_cross_pattern(self, height_field: np.ndarray):
         """Create the traditional cross pattern but with wider channels"""
         # Create wider horizontal corridor
         mid_y = self.grid_height // 2
@@ -437,7 +438,7 @@ class CaveTerrainGenerator:
                 if 0 <= final_x < self.grid_width:
                     height_field[y][final_x] = 0.0
 
-    def _remove_small_islands(self, height_field: List[List[float]]) -> List[List[float]]:
+    def _remove_small_islands(self, height_field: np.ndarray) -> np.ndarray:
         """Remove small isolated solid terrain pieces"""
         for y in range(1, self.grid_height - 1):
             for x in range(1, self.grid_width - 1):
@@ -455,13 +456,13 @@ class CaveTerrainGenerator:
         
         return height_field
     
-    def _generate_border_only(self) -> List[List[float]]:
+    def _generate_border_only(self) -> np.ndarray:
         """Generate terrain with only solid borders"""
-        height_field = [[0.0 for _ in range(self.grid_width)] for _ in range(self.grid_height)]
+        height_field = np.zeros((self.grid_height, self.grid_width), dtype=np.float32)
         self.carver.create_solid_borders(height_field)
         return height_field
     
-    def add_organic_roughening(self, height_field: List[List[float]], complexity: float):
+    def add_organic_roughening(self, height_field: np.ndarray, complexity: float):
         """Add organic roughening to remove straight lines and add natural features"""
         # Add small outcroppings and inlets to terrain edges
         self._add_edge_roughening(height_field, complexity)
@@ -472,7 +473,7 @@ class CaveTerrainGenerator:
         # Add small natural features
         self._add_micro_features(height_field, complexity)
     
-    def _add_edge_roughening(self, height_field: List[List[float]], complexity: float):
+    def _add_edge_roughening(self, height_field: np.ndarray, complexity: float):
         """Add subtle outcroppings and inlets along terrain edges"""
         roughening_strength = complexity * 0.3  # Much more subtle
         
@@ -501,7 +502,7 @@ class CaveTerrainGenerator:
                         if current_val > 0.5:  # Solid terrain
                             height_field[y][x] = 0.3  # Partial inlet
     
-    def _add_area_texture(self, height_field: List[List[float]], complexity: float):
+    def _add_area_texture(self, height_field: np.ndarray, complexity: float):
         """Add very subtle texture to break up large flat areas"""
         for y in range(3, self.grid_height - 3):
             for x in range(3, self.grid_width - 3):
@@ -522,7 +523,7 @@ class CaveTerrainGenerator:
                         if texture_noise > 0.8:  # Very high threshold
                             height_field[y][x] = 0.2  # Very subtle texture element
     
-    def _add_micro_features(self, height_field: List[List[float]], complexity: float):
+    def _add_micro_features(self, height_field: np.ndarray, complexity: float):
         """Add very few small natural features"""
         num_features = int(complexity * self.grid_width * self.grid_height * 0.002)  # Much fewer
         
@@ -535,7 +536,7 @@ class CaveTerrainGenerator:
             if feature_type < 0.7:  # Mostly chambers
                 self._add_tiny_chamber(height_field, x, y)
     
-    def _add_tiny_chamber(self, height_field: List[List[float]], center_x: int, center_y: int):
+    def _add_tiny_chamber(self, height_field: np.ndarray, center_x: int, center_y: int):
         """Add a tiny natural chamber"""
         radius = rng.randint(1, 3)
         for dy in range(-radius, radius + 1):
@@ -545,7 +546,7 @@ class CaveTerrainGenerator:
                     if 0 <= x < self.grid_width and 0 <= y < self.grid_height:
                         height_field[y][x] = 0.0
     
-    def _add_tiny_protrusion(self, height_field: List[List[float]], center_x: int, center_y: int):
+    def _add_tiny_protrusion(self, height_field: np.ndarray, center_x: int, center_y: int):
         """Add a tiny natural protrusion"""
         if height_field[center_y][center_x] < 0.5:  # Only in open areas
             # Random small shape
@@ -557,7 +558,7 @@ class CaveTerrainGenerator:
                         if 0 <= x < self.grid_width and 0 <= y < self.grid_height:
                             height_field[y][x] = 0.8
     
-    def _connect_isolated_air_pockets(self, height_field: List[List[float]]) -> List[List[float]]:
+    def _connect_isolated_air_pockets(self, height_field: np.ndarray) -> np.ndarray:
         """Connect isolated air pockets to the main air space using flood fill"""
         # Find all connected air regions using flood fill
         visited = [[False for _ in range(self.grid_width)] for _ in range(self.grid_height)]
@@ -584,7 +585,7 @@ class CaveTerrainGenerator:
         
         return height_field
     
-    def _flood_fill_air_region(self, height_field: List[List[float]], visited: List[List[bool]], 
+    def _flood_fill_air_region(self, height_field: np.ndarray, visited: List[List[bool]], 
                               start_x: int, start_y: int) -> List[Tuple[int, int]]:
         """Use flood fill to find all connected air cells starting from a point"""
         if (start_x < 0 or start_x >= self.grid_width or 
@@ -612,7 +613,7 @@ class CaveTerrainGenerator:
         
         return region
     
-    def _create_connection_to_main_air(self, height_field: List[List[float]], 
+    def _create_connection_to_main_air(self, height_field: np.ndarray, 
                                      isolated_region: List[Tuple[int, int]], 
                                      main_region: List[Tuple[int, int]]):
         """Create a connection from an isolated air pocket to the main air space"""
@@ -640,7 +641,7 @@ class CaveTerrainGenerator:
             # Create a tunnel between the two points
             self._carve_connection_tunnel(height_field, best_isolated_point, best_main_point)
     
-    def _carve_connection_tunnel(self, height_field: List[List[float]], 
+    def _carve_connection_tunnel(self, height_field: np.ndarray, 
                                 start: Tuple[int, int], end: Tuple[int, int]):
         """Carve a narrow tunnel to connect two air regions"""
         start_x, start_y = start
