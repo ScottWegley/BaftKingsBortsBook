@@ -112,7 +112,7 @@ def run_graphics_mode(args=None):
         simulation.simulation_time += frame_dt
         renderer.render()
         if video_recorder:
-            video_recorder.add_frame(renderer.screen)
+            video_recorder.add_frame(renderer.screen, fixed_dt)
 
     # --- Main simulation loop ---
     # --- Main simulation loop ---
@@ -134,7 +134,7 @@ def run_graphics_mode(args=None):
         # Render at display frame rate
         renderer.render()
         if video_recorder:
-            video_recorder.add_frame(renderer.screen)
+            video_recorder.add_frame(renderer.screen, fixed_dt)
 
     # Freeze and show victory message for 3 seconds after win
     if simulation.is_finished():
@@ -145,15 +145,14 @@ def run_graphics_mode(args=None):
             freeze_time += frame_dt
             renderer.render()
             if video_recorder:
-                video_recorder.add_frame(renderer.screen)
+                video_recorder.add_frame(renderer.screen, fixed_dt)
             # Allow quit/ESC during freeze
             if not renderer.handle_events():
                 break
 
     # Save video if needed
     if video_recorder:
-        # Pass fixed_dt so the recorder can time-lapse the video
-        video_recorder.save(fixed_dt=fixed_dt)
+        video_recorder.save()
 
     pygame.quit()
     print(f"Simulation ended after {simulation.simulation_time:.2f} seconds")
@@ -206,14 +205,14 @@ def run_headless_mode(args=None):
         simulation.simulation_time += dt
         renderer.render()
         if video_recorder:
-            video_recorder.add_frame(renderer.screen)
+            video_recorder.add_frame(renderer.screen, dt)
 
     # Main simulation loop
     while not simulation.is_finished():
         simulation.update(dt)
         renderer.render()
         if video_recorder:
-            video_recorder.add_frame(renderer.screen)
+            video_recorder.add_frame(renderer.screen, dt)
         frames += 1
         progress_interval = cfg.simulation.HEADLESS_PROGRESS_INTERVAL
         if frames % progress_interval == 0:
@@ -226,7 +225,7 @@ def run_headless_mode(args=None):
         freeze_time += dt
         renderer.render()
         if video_recorder:
-            video_recorder.add_frame(renderer.screen)
+            video_recorder.add_frame(renderer.screen, dt)
 
     end_time = time.time()
     print(f"Simulation ended after {simulation.simulation_time:.2f} seconds")
@@ -235,7 +234,7 @@ def run_headless_mode(args=None):
 
     # Save video if needed
     if video_recorder:
-        video_recorder.save(fixed_dt=dt)
+        video_recorder.save()
 
     # Save results if args provided
     if args is not None and simulation.get_winner() is not None:
