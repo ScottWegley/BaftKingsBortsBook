@@ -12,8 +12,10 @@ if [ ! -d /BaftKingsBortsBook ]; then
     git clone git@github.com:ScottWegley/BaftKingsBortsBook.git /BaftKingsBortsBook
 fi
 
-git config --global user.name "BaftKings Docker Container"
-git config --global user.email "scott@BaftKings.bortsbook"
+# Set permissions for daily_event.sh if it exists
+if [ -f /BaftKingsBortsBook/daily_event.sh ]; then
+    chmod +x /BaftKingsBortsBook/daily_event.sh
+fi
 
 # Start cron in the background
 cron

@@ -5,8 +5,7 @@ RUN apt-get update && apt-get install -y git cron && rm -rf /var/lib/apt/lists/*
 
 # Copy scripts
 COPY entrypoint.sh /
-COPY daily_event.sh /
-RUN chmod +x /entrypoint.sh /daily_event.sh
+RUN chmod +x /entrypoint.sh
 
 # Copy crontab file and set up cron
 COPY crontab.txt /crontab.txt

@@ -3,7 +3,7 @@
 git pull
 pip3 install -r requirements.txt
 
-python3 src/main.py --output --canon --headless --rng-mode date
+python3 src/main.py --output --canon --headless --rng-mode random
 python3 send_first_output_to_discord.py
 
 git add .

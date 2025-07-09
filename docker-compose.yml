@@ -10,3 +10,8 @@ services:
     volumes:
       - ./id_ed25519:/root/.ssh/id_ed25519
       - ./known_hosts:/root/.ssh/known_hosts:ro
+    environment:
+      - GIT_AUTHOR_NAME=BaftKings Docker Container
+      - GIT_AUTHOR_EMAIL=scott@BaftKings.bortsbook
+      - GIT_COMMITTER_NAME=BaftKings Docker Container
+      - GIT_COMMITTER_EMAIL=scott@BaftKings.bortsbook
