@@ -20,6 +20,10 @@ class GraphicsRenderer:
         pygame.display.set_caption("Marble Race Simulation")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 36)
+        
+        # Cache character images for memory efficiency
+        self.character_image_cache = {}
+        self._load_character_images()
     
     def render(self):
         """Render the current simulation state"""
@@ -54,23 +58,23 @@ class GraphicsRenderer:
                              int(goal_zone.radius), 2)
 
         # Draw marbles as characters if available
-        import os
-        from pygame import image, Surface
         char_list = getattr(self.simulation, 'characters', None)
         for i, marble in enumerate(self.simulation.marbles):
             char = char_list[i] if char_list and i < len(char_list) else None
             if char:
                 costume = 'default'
-                asset_path = os.path.join('assets', 'characters', char.id, f'{costume}.png')
-                if os.path.exists(asset_path):
-                    char_img = image.load(asset_path).convert_alpha()
-                    char_img = pygame.transform.smoothscale(char_img, (marble.radius*2, marble.radius*2))
+                cache_key = f"{char.id}_{costume}"
+                if cache_key in self.character_image_cache:
+                    # Use cached image for memory efficiency
+                    char_img = self.character_image_cache[cache_key]
                     self.screen.blit(char_img, (int(marble.x-marble.radius), int(marble.y-marble.radius)))
                 else:
+                    # Fallback to colored circle if image not cached
                     pygame.draw.circle(self.screen, marble.color, (int(marble.x), int(marble.y)), marble.radius)
             else:
                 pygame.draw.circle(self.screen, marble.color, (int(marble.x), int(marble.y)), marble.radius)
-            # pygame.draw.circle(self.screen, (255, 255, 255), (int(marble.x), int(marble.y)), 2)  # Removed white dot at marble center
+            
+            # Draw winner highlight
             if self.simulation.get_winner() == i:
                 pygame.draw.circle(self.screen, (255, 255, 0), (int(marble.x), int(marble.y)), marble.radius + 5, 3)
 
@@ -112,3 +116,33 @@ class GraphicsRenderer:
         """Get delta time in seconds"""
         cfg = get_config()
         return self.clock.tick(cfg.simulation.GRAPHICS_FPS) / 1000.0
+    
+    def _load_character_images(self):
+        """Load and cache all character images at startup for memory efficiency"""
+        import os
+        from pygame import image
+        
+        # Get character list from simulation
+        char_list = getattr(self.simulation, 'characters', None)
+        if not char_list:
+            return
+        
+        marble_radius = self.simulation.marble_radius
+        target_size = (marble_radius * 2, marble_radius * 2)
+        
+        for char in char_list:
+            costume = 'default'  # Currently only default costume supported
+            asset_path = os.path.join('assets', 'characters', char.id, f'{costume}.png')
+            
+            if os.path.exists(asset_path):
+                try:
+                    # Load, convert, and scale image once
+                    char_img = image.load(asset_path).convert_alpha()
+                    char_img = pygame.transform.smoothscale(char_img, target_size)
+                    
+                    # Cache the processed image
+                    cache_key = f"{char.id}_{costume}"
+                    self.character_image_cache[cache_key] = char_img
+                    
+                except Exception as e:
+                    print(f"Warning: Could not load character image {asset_path}: {e}")
