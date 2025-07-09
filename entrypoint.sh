@@ -12,6 +12,9 @@ if [ ! -d /BaftKingsBortsBook ]; then
     git clone git@github.com:ScottWegley/BaftKingsBortsBook.git /BaftKingsBortsBook
 fi
 
+git config --global user.name "BaftKings Docker Container"
+git config --global user.email "scott@BaftKings.bortsbook"
+
 # Start cron in the background
 cron
 
