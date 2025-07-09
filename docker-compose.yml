@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  baftkingsbortsbook:
+    build: .
+    container_name: baftkingsbortsbook
+    env_file:
+      - .env
+    # working_dir removed; will use container default
+    tty: true
+    volumes:
+      - ./id_ed25519:/root/.ssh/id_ed25519
+      - ./known_hosts:/root/.ssh/known_hosts:ro

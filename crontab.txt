@@ -1,0 +1,4 @@
+# Run at 7:00PM Pacific Time (PST/PDT) every day
+# PT is UTC-8 or UTC-7 depending on DST; cron uses container time (set to UTC by default)
+# 7:00PM PT = 02:00 UTC next day (during DST)
+0 2 * * * /daily_event.sh >> /var/log/cron.log 2>&1

@@ -1,19 +1,25 @@
+
 import os
 import requests
-from dotenv import load_dotenv
 import json
 import glob
 from datetime import datetime
 import time
 import subprocess
 
-# Load .env file
-env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
-load_dotenv(env_path)
-
+# Get webhook URL from environment, fallback to .env file if not found
 WEBHOOK_URL = os.getenv('WEBHOOK_URL')
 if not WEBHOOK_URL:
-    raise ValueError('WEBHOOK_URL not found in .env')
+    # Try to load from .env file in parent directory
+    env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+    if os.path.exists(env_path):
+        with open(env_path) as f:
+            for line in f:
+                if line.strip().startswith('WEBHOOK_URL='):
+                    WEBHOOK_URL = line.strip().split('=', 1)[1]
+                    break
+    if not WEBHOOK_URL:
+        raise ValueError('WEBHOOK_URL not found in environment or .env file')
 
 output_dir = os.path.join(os.path.dirname(__file__), 'output')
 mp4_files = [f for f in os.listdir(output_dir) if f.lower().endswith('.mp4')]

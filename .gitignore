@@ -17,3 +17,5 @@
 **/__pycache__/*
 .env
 **/output/*.mp4
+
+id_ed25519
