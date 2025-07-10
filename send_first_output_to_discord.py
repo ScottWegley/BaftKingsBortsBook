@@ -7,19 +7,19 @@ from datetime import datetime
 import time
 import subprocess
 
-# Get webhook URL from environment, fallback to .env file if not found
-WEBHOOK_URL = os.getenv('WEBHOOK_URL')
+# Get webhook URL from .env file first, then environment
+WEBHOOK_URL = None
+env_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(env_path):
+    with open(env_path) as f:
+        for line in f:
+            if line.strip().startswith('WEBHOOK_URL='):
+                WEBHOOK_URL = line.strip().split('=', 1)[1]
+                break
 if not WEBHOOK_URL:
-    # Try to load from .env file in parent directory
-    env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
-    if os.path.exists(env_path):
-        with open(env_path) as f:
-            for line in f:
-                if line.strip().startswith('WEBHOOK_URL='):
-                    WEBHOOK_URL = line.strip().split('=', 1)[1]
-                    break
-    if not WEBHOOK_URL:
-        raise ValueError('WEBHOOK_URL not found in environment or .env file')
+    WEBHOOK_URL = os.getenv('WEBHOOK_URL')
+if not WEBHOOK_URL:
+    raise ValueError('WEBHOOK_URL not found in .env file or environment')
 
 output_dir = os.path.join(os.path.dirname(__file__), 'output')
 mp4_files = [f for f in os.listdir(output_dir) if f.lower().endswith('.mp4')]
@@ -47,6 +47,7 @@ if json_path:
 if results_data:
     # Use only the date part, format as 'Month Day, Year'
     ts = results_data.get('timestamp', None)
+    seed_used = results_data.get('rng_seed', None)
     if ts:
         try:
             dt = datetime.fromisoformat(ts)
@@ -60,6 +61,9 @@ else:
 
 embed1 = {
     "title": f"Event for {event_date}",
+    "footer": {
+        "text": f"Seed: {seed_used}"
+    }
 }
 payload1 = {"embeds": [embed1]}
 
@@ -86,21 +90,36 @@ video_length = None
 if results_data:
     video_length = results_data.get('simulation_length_seconds', None)
 if video_length:
-    video_length += 5.5
-    print(f"Waiting {video_length:.2f} seconds before sending winner embed...")
-    time.sleep(video_length)
+    # Calculate the actual video length using an exponential compression (1/2 per 60s segment)
+    sim_remaining = video_length
+    video_wait = 0.0
+    segment_length = 60.0
+    factor = 1.0
+    while sim_remaining > 0:
+        chunk = min(sim_remaining, segment_length)
+        video_wait += chunk * factor
+        sim_remaining -= chunk
+        factor *= 0.5
+    # Add a small buffer
+    video_wait += 15
+    print(f"Waiting {video_wait:.2f} seconds before sending winner embed...")
+    time.sleep(video_wait)
 else:
-    print("Video length unknown, waiting 10 seconds as fallback...")
-    time.sleep(10)
+    print("Video length unknown, waiting 60 seconds as fallback...")
+    time.sleep(60)
 
 winner_name = None
 if results_data:
     winner_name = results_data.get('winning_character_name')
+    winner_id = results_data.get('winning_character_id')
 
 if winner_name:
     winner_embed = {
         "title": "Winner",
-        "description": f"{winner_name}"
+        "description": f"{winner_name}",
+        "footer": {
+            "text": f"ID: {winner_id}"
+        }
     }
     payload_winner = {"embeds": [winner_embed]}
     response3 = requests.post(WEBHOOK_URL, json=payload_winner)
