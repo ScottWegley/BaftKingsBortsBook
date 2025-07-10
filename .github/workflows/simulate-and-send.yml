@@ -37,6 +37,10 @@ jobs:
         run: |
           python -u send_first_output_to_discord.py
 
+      - name: Set up GitHub token for pushing
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+
       - name: Commit and push results
         run: |
           git config --global user.name "github-actions[bot]"
