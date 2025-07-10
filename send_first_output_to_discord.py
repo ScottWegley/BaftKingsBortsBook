@@ -116,9 +116,9 @@ if results_data:
 if winner_name:
     winner_embed = {
         "title": "Winner",
-        "description": f"{winner_name}",
+        "description": f"|| {winner_name} ||",
         "footer": {
-            "text": f"ID: {winner_id}"
+            "text": f"ID: || {winner_id} ||"
         }
     }
     payload_winner = {"embeds": [winner_embed]}
