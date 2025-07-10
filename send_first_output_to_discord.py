@@ -86,6 +86,7 @@ video_length = None
 if results_data:
     video_length = results_data.get('simulation_length_seconds', None)
 if video_length:
+    video_length += 5.5
     print(f"Waiting {video_length:.2f} seconds before sending winner embed...")
     time.sleep(video_length)
 else:
