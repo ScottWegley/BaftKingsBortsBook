@@ -2,7 +2,7 @@ name: Daily Race Debug
 
 on:
   schedule:
-    - cron: '05 3 * * *' # 8:05PM PT (Pacific Time is UTC-7, so 3:05 UTC)
+    - cron: '10 3 * * *' # 8:05PM PT (Pacific Time is UTC-7, so 3:05 UTC)
 
 jobs:
   daily-race-debug:
