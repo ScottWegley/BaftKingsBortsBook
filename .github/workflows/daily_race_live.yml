@@ -2,7 +2,7 @@ name: Daily Race Live
 
 on:
   schedule:
-    - cron: '45 2 * * *' # 7:45PM PT (Pacific Time is UTC-7, so 2:45 UTC)
+    - cron: '59 2 * * *' # 7:59PM PT (Pacific Time is UTC-7, so 2:59 UTC)
 
 jobs:
   daily-race-live:
