@@ -31,7 +31,11 @@ jobs:
         env:
           SDL_AUDIODRIVER: dummy
         run: |
-          ${{ github.event.inputs.simulation_command }}
+          simulation_command="${{ github.event.inputs.simulation_command }}"
+          if [ -z "$simulation_command" ]; then
+            simulation_command='python -u src/main.py --rng-mode date --canon --output --headless'
+          fi
+          $simulation_command
 
       - name: Send Discord live notification
         env:
