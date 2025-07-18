@@ -33,7 +33,7 @@ jobs:
         run: |
           simulation_command="${{ github.event.inputs.simulation_command }}"
           if [ -z "$simulation_command" ]; then
-            simulation_command='python -u src/main.py --rng-mode date --canon --output --headless'
+            simulation_command='python -u src/main.py --rng-mode random --canon --output --headless'
           fi
           $simulation_command
 
