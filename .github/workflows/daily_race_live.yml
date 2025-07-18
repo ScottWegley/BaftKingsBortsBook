@@ -2,7 +2,13 @@ name: Daily Race Live
 
 on:
   schedule:
-    - cron: '07 3 * * *' # 8:07PM PT (Pacific Time is UTC-7, so 3:07 UTC)
+    - cron: '00 3 * * *' # 8:00PM PT (Pacific Time is UTC-7, so 3:00 UTC)
+  workflow_dispatch:
+    inputs:
+      simulation_command:
+        description: 'Simulation command to run'
+        required: false
+        default: 'python -u src/main.py --rng-mode date --canon --output --headless'
 
 jobs:
   daily-race-live:
@@ -25,7 +31,7 @@ jobs:
         env:
           SDL_AUDIODRIVER: dummy
         run: |
-          python -u src/main.py --rng-mode date --canon --output --headless
+          ${{ github.event.inputs.simulation_command }}
 
       - name: Send Discord live notification
         env:

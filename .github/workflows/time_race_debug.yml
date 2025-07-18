@@ -2,7 +2,13 @@ name: Daily Race Debug
 
 on:
   schedule:
-    - cron: '10 3 * * *' # 8:05PM PT (Pacific Time is UTC-7, so 3:05 UTC)
+    - cron: '*/5 * * * *' # Every 5 minutes
+  workflow_dispatch:
+    inputs:
+      simulation_command:
+        description: 'Simulation command to run'
+        required: false
+        default: 'python -u src/main.py --rng-mode random --canon --output --headless'
 
 jobs:
   daily-race-debug:
@@ -25,7 +31,7 @@ jobs:
         env:
           SDL_AUDIODRIVER: dummy
         run: |
-          python -u src/main.py --rng-mode date --canon --output --headless
+          ${{ github.event.inputs.simulation_command }}
 
       - name: Send Discord debug notification
         env:
