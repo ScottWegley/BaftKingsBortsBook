@@ -35,7 +35,7 @@ jobs:
 
       - name: Send Discord debug notification
         env:
-          DEBUG_WEBHOOK_URL: ${{ secrets.DEBUG_WEBHOOK_URL }}
+          WEBHOOK_URL: ${{ secrets.DEBUG_WEBHOOK_URL }}
         run: |
           python -u send_first_output_to_discord.py
 
