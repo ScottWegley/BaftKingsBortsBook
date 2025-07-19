@@ -8,7 +8,7 @@ collisions deterministically.
 
 import math
 import pymunk
-from typing import List, Dict, Optional
+from typing import List, Dict
 from .marble import Marble
 from config import get_config
 import rng
@@ -43,9 +43,6 @@ class PhysicsEngine:
         
         # Store pre-collision velocities to detect stuck bouncing
         self.pre_collision_velocities = {}  # type: Dict[pymunk.Body, tuple]
-        
-        # Setup collision handlers for velocity variation
-        self._setup_collision_handlers()
     
     def _create_boundaries(self):
         """Create static boundary walls for the arena"""
@@ -65,12 +62,6 @@ class PhysicsEngine:
             boundary.collision_type = 1
         
         self.space.add(boundary_body, *boundaries)
-    
-    def _setup_collision_handlers(self):
-        """Setup collision handlers - simplified for newer pymunk versions"""
-        # We'll handle collision variation in the update_physics method instead
-        # of using the deprecated collision handler API
-        pass
     
     def add_marble(self, marble: Marble, marble_id: int):
         """Add a marble to the physics system"""
