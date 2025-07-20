@@ -2,7 +2,7 @@ name: Time Based Race Debug
 
 on:
   schedule:
-    - cron: '0 * * * *' # Every hour
+    - cron: '0 */3 * * *' # Every 3 hours
   workflow_dispatch:
     inputs:
       simulation_command:
