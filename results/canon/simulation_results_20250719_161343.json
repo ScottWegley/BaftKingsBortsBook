@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-07-19T16:13:43.604303",
+  "command_line_arguments": {
+    "headless": true,
+    "graphics": false,
+    "game_mode": "indiv_race",
+    "marbles": 8,
+    "terrain_complexity": 1.0,
+    "arena_width": 1920,
+    "arena_height": 1080,
+    "rng_mode": "random",
+    "rng_value": null,
+    "canon": true,
+    "output": true
+  },
+  "rng_seed": 1752941398,
+  "winning_marble": 6,
+  "winning_character_id": "ENT0006",
+  "winning_character_name": "VIRGIN WHIP",
+  "simulation_length_seconds": 49.95
+}
