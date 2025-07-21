@@ -16,9 +16,9 @@ class Character:
 
 
 CHARACTERS = [
-    Character(id='ENT0000', name='CIGARETTE SAIL', costumes=['default']),
-    Character(id='ENT0001', name='BUBBLE COLLECTION', costumes=['default']),
-    Character(id='ENT0002', name='FINANCE INSTINCT', costumes=['default']),
+    Character(id='ENT0000', name='PIANO BOOM', costumes=['default']),
+    Character(id='ENT0001', name='MICHAEL', costumes=['default']),
+    Character(id='ENT0002', name='INSTINCT', costumes=['default']),
     Character(id='ENT0003', name='CIGARETTE', costumes=['default']),
     Character(id='ENT0004', name='BROADCAST', costumes=['default']),
     Character(id='ENT0005', name='BUBBLE COLLECTION', costumes=['default']),
