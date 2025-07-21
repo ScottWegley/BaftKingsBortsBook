@@ -2,7 +2,7 @@ name: Daily Race Live
 
 on:
   schedule:
-    - cron: '00 3 * * *' # 8:00PM PT (Pacific Time is UTC-7, so 3:00 UTC)
+    - cron: '30 2 * * *' # 7:30PM PT (Pacific Time is UTC-7, so 2:30 UTC)
   workflow_dispatch:
     inputs:
       simulation_command:
@@ -40,6 +40,7 @@ jobs:
       - name: Send Discord live notification
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          WINNER_REPORT_WEBHOOK_URL: ${{ secrets.WINNER_REPORT_WEBHOOK_URL }}
         run: |
           python -u send_first_output_to_discord.py
 

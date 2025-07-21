@@ -7,19 +7,25 @@ from datetime import datetime
 import time
 import subprocess
 
-# Get webhook URL from .env file first, then environment
+
+# Get webhook URLs from .env file first, then environment
 WEBHOOK_URL = None
+WINNER_REPORT_WEBHOOK_URL = None
 env_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(env_path):
     with open(env_path) as f:
         for line in f:
             if line.strip().startswith('WEBHOOK_URL='):
                 WEBHOOK_URL = line.strip().split('=', 1)[1]
-                break
+            if line.strip().startswith('WINNER_REPORT_WEBHOOK_URL='):
+                WINNER_REPORT_WEBHOOK_URL = line.strip().split('=', 1)[1]
 if not WEBHOOK_URL:
     WEBHOOK_URL = os.getenv('WEBHOOK_URL')
+if not WINNER_REPORT_WEBHOOK_URL:
+    WINNER_REPORT_WEBHOOK_URL = os.getenv('WINNER_REPORT_WEBHOOK_URL')
 if not WEBHOOK_URL:
     raise ValueError('WEBHOOK_URL not found in .env file or environment')
+
 
 output_dir = os.path.join(os.path.dirname(__file__), 'output')
 mp4_files = [f for f in os.listdir(output_dir) if f.lower().endswith('.mp4')]
@@ -104,6 +110,7 @@ if video_length:
     video_wait += 15
     print(f"Waiting {video_wait:.2f} seconds before sending winner embed...")
     time.sleep(video_wait)
+   
 else:
     print("Video length unknown, waiting 60 seconds as fallback...")
     time.sleep(60)
@@ -126,6 +133,19 @@ if winner_name:
         print(f'Failed to send winner embed. Status: {response3.status_code}, Response: {response3.text}')
 else:
     print("No winner name found in results JSON.")
+
+# After sleep, send winner id as plain text to WINNER_REPORT_WEBHOOK_URL
+if results_data:
+    winner_id = results_data.get('winning_character_id')
+    if winner_id and WINNER_REPORT_WEBHOOK_URL:
+        payload = {"content": str(winner_id)}
+        response_report = requests.post(WINNER_REPORT_WEBHOOK_URL, json=payload)
+        if response_report.status_code in (200, 204):
+            print('Winner ID sent to WINNER_REPORT_WEBHOOK_URL successfully!')
+        else:
+            print(f'Failed to send winner id to WINNER_REPORT_WEBHOOK_URL. Status: {response_report.status_code}, Response: {response_report.text}')
+    else:
+        print('No winner id found or WINNER_REPORT_WEBHOOK_URL not set.')
 
 # 4. Clean up: delete MP4 files from output directory
 print("Cleaning up MP4 files from output directory...")

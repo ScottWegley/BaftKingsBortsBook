@@ -34,6 +34,7 @@ jobs:
       - name: Send Discord notification
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          WINNER_REPORT_WEBHOOK_URL: ${{ secrets.WINNER_REPORT_WEBHOOK_URL }}
         run: |
           python -u send_first_output_to_discord.py
 
