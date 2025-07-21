@@ -1,5 +1,6 @@
 import os
 import requests
+from datetime import datetime
 
 # Get WINNER_REPORT_WEBHOOK_URL from .env or environment
 WINNER_REPORT_WEBHOOK_URL = None
@@ -14,7 +15,9 @@ if not WINNER_REPORT_WEBHOOK_URL:
 if not WINNER_REPORT_WEBHOOK_URL:
     raise ValueError('WINNER_REPORT_WEBHOOK_URL not found in .env file or environment')
 
-payload = {"content": "{\"type\":\"winner\",\"winner\": \"ENT0000\",\"seed\":\"abc123xyz\"}"}
+timestamp = datetime.utcnow().isoformat() + 'Z'
+status_obj = {"type": "status", "status": "RUNNING", "timestamp": timestamp}
+payload = {"content": str(status_obj).replace("'", '"')}
 response = requests.post(WINNER_REPORT_WEBHOOK_URL, json=payload)
 if response.status_code in (200, 204):
     print('RUNNING message sent to WINNER_REPORT_WEBHOOK_URL successfully!')
