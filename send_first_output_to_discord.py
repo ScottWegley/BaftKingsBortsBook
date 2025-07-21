@@ -116,10 +116,7 @@ if results_data:
 if winner_name:
     winner_embed = {
         "title": "Winner",
-        "description": f"|| {winner_name} ||",
-        "footer": {
-            "text": f"ID: || {winner_id} ||"
-        }
+        "description": f"|| {winner_name} || \n || ID: {winner_id} ||",
     }
     payload_winner = {"embeds": [winner_embed]}
     response3 = requests.post(WEBHOOK_URL, json=payload_winner)
