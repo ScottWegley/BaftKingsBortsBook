@@ -30,11 +30,13 @@ jobs:
       - name: Run simulation
         env:
           SDL_AUDIODRIVER: dummy
+          WINNER_REPORT_WEBHOOK_URL: ${{ secrets.WINNER_REPORT_WEBHOOK_URL }}
         run: |
           simulation_command="${{ github.event.inputs.simulation_command }}"
           if [ -z "$simulation_command" ]; then
             simulation_command='python -u src/main.py --rng-mode date --canon --output --headless'
           fi
+          python -u send_race_start.py
           $simulation_command
 
       - name: Send Discord live notification

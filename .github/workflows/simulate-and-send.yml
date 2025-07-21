@@ -28,7 +28,9 @@ jobs:
       - name: Run simulation
         env:
           SDL_AUDIODRIVER: dummy
+          WINNER_REPORT_WEBHOOK_URL: ${{ secrets.WINNER_REPORT_WEBHOOK_URL }}
         run: |
+          python -u send_race_start.py
           ${{ github.event.inputs.simulation_command }}
 
       - name: Send Discord notification

@@ -76,8 +76,17 @@ payload1 = {"embeds": [embed1]}
 response1 = requests.post(WEBHOOK_URL, json=payload1)
 if response1.status_code in (200, 204):
     print('Event embed sent successfully!')
+    # Send COMPLETED message
+    completed_payload = {"content": "COMPLETED"}
+    response_completed = requests.post(WINNER_REPORT_WEBHOOK_URL, json=completed_payload)
+    if response_completed.status_code in (200, 204):
+        print('COMPLETED message sent to WINNER_REPORT_WEBHOOK_URL successfully!')
+    else:
+        print(f'Failed to send COMPLETED message to WINNER_REPORT_WEBHOOK_URL. Status: {response_completed.status_code}, Response: {response_completed.text}')
 else:
     print(f'Failed to send event embed. Status: {response1.status_code}, Response: {response1.text}')
+
+
 
 # 2. Send the video by itself (no embed)
 with open(first_mp4, 'rb') as f:
@@ -134,7 +143,8 @@ if winner_name:
 else:
     print("No winner name found in results JSON.")
 
-# After sleep, send winner id as plain text to WINNER_REPORT_WEBHOOK_URL
+
+# After sleep, send winner id as Discord message to WINNER_REPORT_WEBHOOK_URL
 if results_data:
     winner_id = results_data.get('winning_character_id')
     if winner_id and WINNER_REPORT_WEBHOOK_URL:
