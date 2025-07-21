@@ -14,7 +14,7 @@ if not WINNER_REPORT_WEBHOOK_URL:
 if not WINNER_REPORT_WEBHOOK_URL:
     raise ValueError('WINNER_REPORT_WEBHOOK_URL not found in .env file or environment')
 
-payload = {"content": "RUNNING"}
+payload = {"content": "{\"type\":\"winner\",\"winner\": \"ENT0000\",\"seed\":\"abc123xyz\"}"}
 response = requests.post(WINNER_REPORT_WEBHOOK_URL, json=payload)
 if response.status_code in (200, 204):
     print('RUNNING message sent to WINNER_REPORT_WEBHOOK_URL successfully!')

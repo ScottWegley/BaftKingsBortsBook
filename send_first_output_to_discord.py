@@ -77,7 +77,7 @@ response1 = requests.post(WEBHOOK_URL, json=payload1)
 if response1.status_code in (200, 204):
     print('Event embed sent successfully!')
     # Send COMPLETED message
-    completed_payload = {"content": "COMPLETED"}
+    completed_payload = {"content": "{\"type\": \"winner\", \"winner\": \"ENT0000\", \"seed\": \"abc123xyz\"}"}
     response_completed = requests.post(WINNER_REPORT_WEBHOOK_URL, json=completed_payload)
     if response_completed.status_code in (200, 204):
         print('COMPLETED message sent to WINNER_REPORT_WEBHOOK_URL successfully!')
@@ -148,7 +148,7 @@ else:
 if results_data:
     winner_id = results_data.get('winning_character_id')
     if winner_id and WINNER_REPORT_WEBHOOK_URL:
-        payload = {"content": str(winner_id)}
+        payload = {"content": "{\"type\": \"winner\", \"winner\": \"" + winner_id + "\", \"seed\": \"abc123xyz\"}"}
         response_report = requests.post(WINNER_REPORT_WEBHOOK_URL, json=payload)
         if response_report.status_code in (200, 204):
             print('Winner ID sent to WINNER_REPORT_WEBHOOK_URL successfully!')
