@@ -17,13 +17,13 @@ class Character:
 
 CHARACTERS = [
     Character(id='ENT0000', name='CIGARETTE SAIL', costumes=['default']),
-    Character(id='ENT0001', name='GLOW PROSPER', costumes=['default']),
+    Character(id='ENT0001', name='BUBBLE COLLECTION', costumes=['default']),
     Character(id='ENT0002', name='FINANCE INSTINCT', costumes=['default']),
-    Character(id='ENT0003', name='SLANT VEGETARIAN', costumes=['default']),
-    Character(id='ENT0004', name='PIANO BOOM', costumes=['default']),
+    Character(id='ENT0003', name='CIGARETTE', costumes=['default']),
+    Character(id='ENT0004', name='BROADCAST', costumes=['default']),
     Character(id='ENT0005', name='BUBBLE COLLECTION', costumes=['default']),
     Character(id='ENT0006', name='VIRGIN WHIP', costumes=['default']),
-    Character(id='ENT0007', name='COW PARTNER', costumes=['default']),
+    Character(id='ENT0007', name='FINANCE', costumes=['default']),
 ]
 
 def get_character_by_id(char_id: str) -> Character:
