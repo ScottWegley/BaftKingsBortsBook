@@ -60,7 +60,7 @@ if results_data:
     timestamp = datetime.utcnow().isoformat() + 'Z'
     complete_content = json.dumps({
         "type": "status",
-        "status": "COMPLETE",
+        "status": "COMPLETED",
         "seed": seed_used,
         "timestamp": timestamp
     })
@@ -104,7 +104,7 @@ if results_data:
     winner_id = results_data.get('winning_character_id')
     seed_used = results_data.get('rng_seed', None)
     if winner_id and WINNER_REPORT_WEBHOOK_URL:
-        winner_content = json.dumps({"type": "winner", "winner": winner_id, "seed": seed_used})
+        winner_content = json.dumps({"type": "winner", "winner": winner_id, "seed": str(seed_used)})
         payload_winner = {"content": winner_content}
         response_winner = requests.post(WINNER_REPORT_WEBHOOK_URL, data=payload_winner)
         if response_winner.status_code in (200, 204):
