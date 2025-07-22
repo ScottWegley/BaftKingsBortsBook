@@ -14,6 +14,8 @@ A modular, physics-based simulation of marbles racing on procedurally generated 
   - `rendering/`: Pygame-based graphics and UI rendering
   - `simulation/`: Simulation orchestration, marble management, and run modes
   - `game_modes/`: Game logic, zone validation, and extensible game mode support
+  - `integrations/`: External service integrations (Discord webhooks)
+  - `results/`: Results storage and management
 
 ## Core Concepts
 
@@ -29,12 +31,21 @@ A modular, physics-based simulation of marbles racing on procedurally generated 
 - CLI options: number of marbles, terrain complexity, arena size, execution mode, RNG seed/mode.
 - Game mode can be set at runtime; configuration is accessible via `get_config()` and can be changed with `set_game_mode()`.
 - Results and simulation progress can be saved for later analysis.
-- `--output` saves a video (MP4) of the simulation to the output folder. GIF output is no longer supported.
+- `--output` saves a video (MP4) of the simulation to the output folder and optionally sends Discord notifications if configured.
+- `--canon` flag saves results to `/results/canon` instead of `/results/misc` for official runs.
+- `--no-discord` disables Discord notifications even if `--output` is used and Discord is configured.
 
 ## Dependencies
 
-- Required: `pygame`
+- Required: `pygame`, `requests`
 - Optional (for advanced terrain): `numpy`, `scipy`, `scikit-image`
+
+## Discord Integration
+
+- Configure Discord webhook URLs in a `.env` file or environment variables
+- Set `WINNER_REPORT_WEBHOOK_URL` for race notifications
+- Discord notifications are sent automatically when using `--output` flag (unless `--no-discord` is specified)
+- Includes race start, completion with video, and winner announcement messages
 
 
 ## Character System

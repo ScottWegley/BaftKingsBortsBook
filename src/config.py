@@ -25,6 +25,25 @@ class RNGConfig:
     DEFAULT_RNG_VALUE = None
 
 
+class IntegrationConfig:
+    """Configuration for external integrations - Global across all game modes"""
+    
+    # Discord integration
+    DISCORD_ENABLED = True  # Whether to attempt Discord notifications
+    DISCORD_SEND_START = True  # Send race start notifications
+    DISCORD_SEND_COMPLETE = True  # Send race complete notifications with video
+    DISCORD_SEND_WINNER = True  # Send winner announcements
+    DISCORD_CLEANUP_VIDEOS = True  # Clean up videos after Discord upload
+
+
+class ResultsConfig:
+    """Configuration for results storage - Global across all game modes"""
+    
+    # Result storage
+    RESULTS_KEEP_COUNT = 50  # Number of recent results to keep when cleaning up
+    RESULTS_AUTO_CLEANUP = False  # Whether to automatically clean up old results
+
+
 class SimulationConfig:
     # Video output configuration
     VIDEO_FPS = 60  # Target frames per second for video output
@@ -176,8 +195,10 @@ class Config:
     """Main configuration class that manages game mode specific configurations"""
     
     def __init__(self, game_mode: str = "indiv_race"):
-        # Global RNG config (same across all game modes)
+        # Global configs (same across all game modes)
         self.rng = RNGConfig()
+        self.integration = IntegrationConfig()
+        self.results = ResultsConfig()
         
         # Initialize with default game mode
         self.current_game_mode = game_mode
