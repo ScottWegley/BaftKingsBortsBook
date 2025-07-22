@@ -16,14 +16,14 @@ class Character:
 
 
 CHARACTERS = [
-    Character(id='ENT0000', name='PIANO BOOM', costumes=['default']),
-    Character(id='ENT0001', name='MICHAEL', costumes=['default']),
-    Character(id='ENT0002', name='INSTINCT', costumes=['default']),
+    Character(id='ENT0000', name='POLICE EXCITEMENT', costumes=['default']),
+    Character(id='ENT0001', name='FINANCE INSTINCT', costumes=['default']),
+    Character(id='ENT0002', name='CITY STEAK', costumes=['default']),
     Character(id='ENT0003', name='CIGARETTE', costumes=['default']),
-    Character(id='ENT0004', name='BROADCAST', costumes=['default']),
-    Character(id='ENT0005', name='BUBBLE COLLECTION', costumes=['default']),
-    Character(id='ENT0006', name='VIRGIN WHIP', costumes=['default']),
-    Character(id='ENT0007', name='FINANCE', costumes=['default']),
+    Character(id='ENT0004', name='SOUP REPUTATION', costumes=['default']),
+    Character(id='ENT0005', name='TENNIS', costumes=['default']),
+    Character(id='ENT0006', name='DEATH REVOLUTION', costumes=['default']),
+    Character(id='ENT0007', name='BROADCAST JOURNALISM', costumes=['default']),
 ]
 
 def get_character_by_id(char_id: str) -> Character:
