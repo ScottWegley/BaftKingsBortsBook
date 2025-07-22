@@ -20,9 +20,9 @@ CHARACTERS = [
     Character(id='ENT0001', name='FINANCE INSTINCT', costumes=['default']),
     Character(id='ENT0002', name='CITY STEAK', costumes=['default']),
     Character(id='ENT0003', name='CIGARETTE', costumes=['default']),
-    Character(id='ENT0004', name='SOUP REPUTATION', costumes=['default']),
+    Character(id='ENT0004', name='GHOST ZAPPER', costumes=['default']),
     Character(id='ENT0005', name='TENNIS', costumes=['default']),
-    Character(id='ENT0006', name='DEATH REVOLUTION', costumes=['default']),
+    Character(id='ENT0006', name='SWEET KETAMINE', costumes=['default']),
     Character(id='ENT0007', name='BROADCAST JOURNALISM', costumes=['default']),
 ]
 
