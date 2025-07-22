@@ -50,10 +50,30 @@ if json_path:
         results_data = json.load(jf)
 
 
-# No embed or separate video message. Only send winner message with video attached after wait.
 
 
-# Wait for the length of the video, then send winner message with video attached
+
+# Send completed status (with video) before the video wait
+if results_data:
+    seed_used = results_data.get('rng_seed', None)
+    from datetime import datetime
+    timestamp = datetime.utcnow().isoformat() + 'Z'
+    complete_content = json.dumps({
+        "type": "status",
+        "status": "COMPLETE",
+        "seed": seed_used,
+        "timestamp": timestamp
+    })
+    with open(first_mp4, 'rb') as f:
+        files = {'file1': (filename, f, 'video/mp4')}
+        payload_complete = {"content": complete_content}
+        response_complete = requests.post(WINNER_REPORT_WEBHOOK_URL, data=payload_complete, files=files)
+    if response_complete.status_code in (200, 204):
+        print('COMPLETE status and video sent to WINNER_REPORT_WEBHOOK_URL successfully!')
+    else:
+        print(f'Failed to send COMPLETE status and video to WINNER_REPORT_WEBHOOK_URL. Status: {response_complete.status_code}, Response: {response_complete.text}')
+
+# Wait for the length of the video, then send winner message (no video)
 video_length = None
 if results_data:
     video_length = results_data.get('simulation_length_seconds', None)
@@ -77,20 +97,20 @@ else:
     time.sleep(60)
 
 
-# After sleep, send winner message with video attached to WINNER_REPORT_WEBHOOK_URL
+
+
+# After sleep, send winner message (no video) to WINNER_REPORT_WEBHOOK_URL
 if results_data:
     winner_id = results_data.get('winning_character_id')
     seed_used = results_data.get('rng_seed', None)
     if winner_id and WINNER_REPORT_WEBHOOK_URL:
-        content = json.dumps({"type": "winner", "winner": winner_id, "seed": seed_used})
-        with open(first_mp4, 'rb') as f:
-            files = {'file1': (filename, f, 'video/mp4')}
-            payload = {"content": content}
-            response_report = requests.post(WINNER_REPORT_WEBHOOK_URL, data=payload, files=files)
-        if response_report.status_code in (200, 204):
-            print('Winner message and video sent to WINNER_REPORT_WEBHOOK_URL successfully!')
+        winner_content = json.dumps({"type": "winner", "winner": winner_id, "seed": seed_used})
+        payload_winner = {"content": winner_content}
+        response_winner = requests.post(WINNER_REPORT_WEBHOOK_URL, data=payload_winner)
+        if response_winner.status_code in (200, 204):
+            print('Winner message sent to WINNER_REPORT_WEBHOOK_URL successfully!')
         else:
-            print(f'Failed to send winner message and video to WINNER_REPORT_WEBHOOK_URL. Status: {response_report.status_code}, Response: {response_report.text}')
+            print(f'Failed to send winner message to WINNER_REPORT_WEBHOOK_URL. Status: {response_winner.status_code}, Response: {response_winner.text}')
     else:
         print('No winner id found or WINNER_REPORT_WEBHOOK_URL not set.')
 
