@@ -22,7 +22,7 @@ class DiscordIntegration:
     def __init__(self):
         """Initialize Discord integration with webhook URLs from environment."""
         self.webhook_url = self._get_env_var('WEBHOOK_URL')
-        self.winner_report_webhook_url = self._get_env_var('WINNER_REPORT_WEBHOOK_URL')
+        self.winner_report_webhook_url = self._get_env_var('DEV_REPORT_WEBHOOK_URL')
         
     def _get_env_var(self, var_name: str) -> Optional[str]:
         """Get environment variable from .env file or system environment."""
@@ -40,7 +40,7 @@ class DiscordIntegration:
     def send_race_start(self) -> bool:
         """Send race start notification to Discord."""
         if not self.winner_report_webhook_url:
-            print("Warning: WINNER_REPORT_WEBHOOK_URL not configured, skipping Discord start notification")
+            print("Warning: DEV_REPORT_WEBHOOK_URL not configured, skipping Discord start notification")
             return False
             
         timestamp = datetime.utcnow().isoformat() + 'Z'
@@ -62,7 +62,7 @@ class DiscordIntegration:
     def send_race_complete_with_video(self, video_path: str, results_data: Dict[str, Any]) -> bool:
         """Send race completion status with video to Discord."""
         if not self.winner_report_webhook_url:
-            print("Warning: WINNER_REPORT_WEBHOOK_URL not configured, skipping Discord completion notification")
+            print("Warning: DEV_REPORT_WEBHOOK_URL not configured, skipping Discord completion notification")
             return False
             
         if not os.path.exists(video_path):
@@ -98,7 +98,7 @@ class DiscordIntegration:
     def send_winner_announcement(self, results_data: Dict[str, Any], delay_seconds: Optional[float] = None) -> bool:
         """Send winner announcement to Discord, optionally after a delay."""
         if not self.winner_report_webhook_url:
-            print("Warning: WINNER_REPORT_WEBHOOK_URL not configured, skipping Discord winner announcement")
+            print("Warning: DEV_REPORT_WEBHOOK_URL not configured, skipping Discord winner announcement")
             return False
             
         # Calculate delay if not provided

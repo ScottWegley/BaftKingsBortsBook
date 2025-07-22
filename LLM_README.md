@@ -1,7 +1,37 @@
 
+
 # Marble Race Simulation
 
 A modular, physics-based simulation of marbles racing on procedurally generated flowing terrain.
+
+---
+
+
+## Project Overview
+
+- All functionality runs through `src/main.py`.
+- Discord notifications are integrated and sent automatically when using the `--output` flag (unless `--no-discord` is specified).
+- Functionality is organized into modules for integrations, results, simulation, terrain, physics, and rendering.
+- GitHub Actions workflows are streamlined for CI/CD.
+- Results are saved to the correct directory based on the `--canon` flag.
+- All settings are centralized and configurable in `src/config.py`.
+
+---
+
+
+## Usage
+
+Run the simulation with:
+```bash
+python src/main.py --canon --output --headless
+```
+
+Options:
+- `--no-discord` - Disables Discord notifications even with `--output`
+- `--canon` - Saves results to `results/canon/` instead of `results/misc/`
+
+---
+
 
 ## Structure
 
@@ -17,6 +47,10 @@ A modular, physics-based simulation of marbles racing on procedurally generated 
   - `integrations/`: External service integrations (Discord webhooks)
   - `results/`: Results storage and management
 
+
+---
+
+
 ## Core Concepts
 
 - **Configuration System**: All simulation, terrain, and rendering parameters are centralized in `config.py` using a class-based system. Supports global, per-game-mode, and runtime overrides. Easily extensible for new game modes.
@@ -26,42 +60,59 @@ A modular, physics-based simulation of marbles racing on procedurally generated 
 - **Simulation**: Supports both real-time graphics and fast headless execution. Results and progress can be saved and analyzed.
 
 
-## Usage
 
-- CLI options: number of marbles, terrain complexity, arena size, execution mode, RNG seed/mode.
-- Game mode can be set at runtime; configuration is accessible via `get_config()` and can be changed with `set_game_mode()`.
-- Results and simulation progress can be saved for later analysis.
-- `--output` saves a video (MP4) of the simulation to the output folder and optionally sends Discord notifications if configured.
-- `--canon` flag saves results to `/results/canon` instead of `/results/misc` for official runs.
-- `--no-discord` disables Discord notifications even if `--output` is used and Discord is configured.
+---
+
+
 
 ## Dependencies
 
 - Required: `pygame`, `requests`
 - Optional (for advanced terrain): `numpy`, `scipy`, `scikit-image`
 
+---
+
+
+
 ## Discord Integration
 
 - Configure Discord webhook URLs in a `.env` file or environment variables
-- Set `WINNER_REPORT_WEBHOOK_URL` for race notifications
-- Discord notifications are sent automatically when using `--output` flag (unless `--no-discord` is specified)
-- Includes race start, completion with video, and winner announcement messages
+- Set `DEV_REPORT_WEBHOOK_URL` for race notifications
+- Discord notifications are sent automatically when using the `--output` flag (unless `--no-discord` is specified)
+- Race start, completion with video, and winner announcement messages are included
+
+Configuration options:
+- `.env` file with `DEV_REPORT_WEBHOOK_URL`
+- Environment variables
+- Config classes in `src/config.py`
+
+
+
+---
 
 
 ## Character System
 
-- Marbles are now characters, each with an `id`, `name`, and a list of `costumes` (must include "default").
+- Each marble is a character, with an `id`, `name`, and a list of `costumes` (must include "default").
 - Character assets are stored in `assets/characters/{id}/{costume}.png` (e.g., `assets/characters/redbird/default.png`).
 - The number of marbles is capped at the number of available characters. If more are requested, only as many as there are characters will spawn.
 - To add a character, edit `src/characters.py` and add to the `CHARACTERS` list.
 - Each character image should be a 30x30 PNG (matching the marble's diameter), with the main visual centered and fitting within a 15px radius circle.
-- The marble's collision shape remains a circle; only the visual changes.
+- The marble's collision shape is always a circle; only the visual changes.
+
+
+---
+
 
 ## Extensibility & Customization
 
-- Modular design: Physics, terrain, rendering, simulation, and characters are decoupled for easy extension/testing.
+- The modular design allows physics, terrain, rendering, simulation, and characters to be extended or tested independently.
 - **Game Modes**: Add new game modes by subclassing the configuration classes and adding logic in `game_modes/`. Register new modes in `config.py`'s `GAME_MODE_CONFIGS`.
 - **Configuration**: All parameters (marble size, speed, terrain complexity, zone placement, etc.) are easily adjustable in `config.py` or at runtime.
+
+
+---
+
 
 ## Configuration System Overview
 
