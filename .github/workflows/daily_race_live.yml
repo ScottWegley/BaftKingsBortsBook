@@ -33,7 +33,7 @@ jobs:
       - name: Run simulation with Discord notifications
         env:
           SDL_AUDIODRIVER: dummy
-          DEV_REPORT_WEBHOOK_URL: ${{ secrets.DEV_REPORT_WEBHOOK_URL }}
+          DEV_REPORT_WEBHOOK_URL: ${{ secrets.PROD_REPORT_WEBHOOK_URL }}
         run: |
           simulation_command="${{ github.event.inputs.simulation_command }}"
           if [ -z "$simulation_command" ]; then
