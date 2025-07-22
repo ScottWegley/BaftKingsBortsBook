@@ -1,12 +1,15 @@
 name: Time Based Race Debug
 
+# Note: Discord notifications are now integrated into the main program when using --output
+# Use --no-discord flag to disable Discord notifications if needed
+
 on:
   # schedule:
   #   - cron: '0 */3 * * *' # Every 3 hours
   workflow_dispatch:
     inputs:
       simulation_command:
-        description: 'Simulation command to run'
+        description: 'Simulation command - Discord notifications are automatic with --output flag'
         required: false
         default: 'python -u src/main.py --rng-mode random --canon --output --headless'
 
@@ -27,24 +30,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run simulation
+      - name: Run simulation with Discord notifications
         env:
           SDL_AUDIODRIVER: dummy
-          WINNER_REPORT_WEBHOOK_URL: ${{ secrets.WINNER_REPORT_WEBHOOK_URL }}
+          DEV_REPORT_WEBHOOK_URL: ${{ secrets.DEV_REPORT_WEBHOOK_URL }}
         run: |
           simulation_command="${{ github.event.inputs.simulation_command }}"
           if [ -z "$simulation_command" ]; then
             simulation_command='python -u src/main.py --rng-mode random --canon --output --headless'
           fi
-          python -u send_race_start.py
           $simulation_command
-
-      - name: Send Discord debug notification
-        env:
-          WEBHOOK_URL: ${{ secrets.DEBUG_WEBHOOK_URL }}
-          WINNER_REPORT_WEBHOOK_URL: ${{ secrets.WINNER_REPORT_WEBHOOK_URL }}
-        run: |
-          python -u send_first_output_to_discord.py
 
       - name: Set up GitHub token for pushing
         run: |

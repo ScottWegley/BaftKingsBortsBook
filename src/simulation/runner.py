@@ -12,56 +12,33 @@ from rendering import GraphicsRenderer
 from .manager import SimulationManager
 from rng import get_current_seed
 from enum import Enum
+from integrations import DiscordIntegration
+from results import ResultsManager
 
 
 def _save_simulation_results(args, simulation_time: float, winner_marble_id: int, simulation=None):
-    """Save simulation results to file. Pass simulation instance to avoid re-instantiating."""
-    # Determine output directory
-    if hasattr(args, 'canon') and args.canon:
-        output_dir = os.path.join("results", "canon")
-    else:
-        output_dir = os.path.join("results", "misc")
-
-    # Ensure directory exists (relative path)
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Create filename with timestamp (relative path)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"simulation_results_{timestamp}.json"
-    filepath = os.path.join(output_dir, filename)
+    """Save simulation results using the ResultsManager."""
+    results_manager = ResultsManager()
     
     # Collect command line arguments
     cmd_args = {}
-    for arg_name, arg_value in vars(args).items():
-        if isinstance(arg_value, Enum):
-            cmd_args[arg_name] = arg_value.value
-        else:
+    if args:
+        for arg_name, arg_value in vars(args).items():
             cmd_args[arg_name] = arg_value
     
-    # Get winner character id if possible, using the provided simulation instance
-    winner_character_id = None
-    winner_character_name = None
-    if simulation is not None and winner_marble_id is not None and hasattr(simulation, 'characters') and winner_marble_id < len(simulation.characters):
-        char = simulation.characters[winner_marble_id]
-        if char:
-            winner_character_id = char.id
-            winner_character_name = getattr(char, 'name', None)
-    # Create results data
-    results = {
-        "timestamp": datetime.now().isoformat(),
-        "command_line_arguments": cmd_args,
-        "rng_seed": get_current_seed(),
-        "winning_marble": winner_marble_id,
-        "winning_character_id": winner_character_id,
-        "winning_character_name": winner_character_name,
-        "simulation_length_seconds": round(simulation_time, 2)
-    }
+    # Determine if this is a canon run
+    is_canon = hasattr(args, 'canon') and args.canon
     
-    # Save to file
-    with open(filepath, 'w') as f:
-        json.dump(results, f, indent=2)
+    # Save results
+    filepath = results_manager.save_results(
+        simulation_time=simulation_time,
+        winner_marble_id=winner_marble_id,
+        simulation_instance=simulation,
+        command_args=cmd_args,
+        is_canon=is_canon
+    )
     
-    print(f"Results saved to: {filepath}")
+    return filepath
 
 
 def _print_simulation_info(mode_name: str, extra_info: str = ""):
@@ -78,13 +55,23 @@ def run_graphics_mode(args=None):
     """Run simulation with graphics"""
     _print_simulation_info("Graphics Mode", "Press ESC or close window to exit early")
     
+    # Initialize Discord integration if output is enabled
+    discord = None
+    cfg = get_config()
+    discord_enabled = (hasattr(args, 'output') and args.output and 
+                      cfg.integration.DISCORD_ENABLED and 
+                      not (hasattr(args, 'no_discord') and args.no_discord))
+    
+    if discord_enabled:
+        discord = DiscordIntegration()
+        if discord.is_configured() and cfg.integration.DISCORD_SEND_START:
+            discord.send_race_start()
 
     simulation = SimulationManager()
     renderer = GraphicsRenderer(simulation)
 
     # Video recording setup
     video_recorder = None
-    cfg = get_config()
     # If output is requested, clear any existing mp4 files in output dir first
     if hasattr(args, 'output') and args.output:
         # Always use project root/output
@@ -157,21 +144,57 @@ def run_graphics_mode(args=None):
     pygame.quit()
     print(f"Simulation ended after {simulation.simulation_time:.2f} seconds")
 
-    # Save results if args provided
+    # Save results and handle Discord notifications if needed
     if args is not None and simulation.get_winner() is not None:
-        _save_simulation_results(args, simulation.simulation_time, simulation.get_winner(), simulation)
+        results_filepath = _save_simulation_results(args, simulation.simulation_time, simulation.get_winner(), simulation)
+        
+        # Handle Discord notifications if output was enabled
+        if hasattr(args, 'output') and args.output and discord and discord.is_configured():
+            # Load the results for Discord posting
+            results_manager = ResultsManager()
+            results_data = results_manager.get_latest_results()
+            
+            if results_data:
+                # Send completion notification with video if available
+                if cfg.integration.DISCORD_SEND_COMPLETE and video_recorder:
+                    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'output'))
+                    mp4_files = [f for f in os.listdir(output_dir) if f.lower().endswith('.mp4')]
+                    if mp4_files:
+                        mp4_files.sort()
+                        video_path = os.path.join(output_dir, mp4_files[0])
+                        discord.send_race_complete_with_video(video_path, results_data)
+                
+                # Send winner announcement (with delay)
+                if cfg.integration.DISCORD_SEND_WINNER:
+                    discord.send_winner_announcement(results_data)
+                
+                # Clean up videos if configured
+                if cfg.integration.DISCORD_CLEANUP_VIDEOS:
+                    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'output'))
+                    discord.cleanup_videos(output_dir)
 
 
 def run_headless_mode(args=None):
     """Run simulation without graphics"""
     _print_simulation_info("Headless Mode")
     
+    # Initialize Discord integration if output is enabled
+    discord = None
+    cfg = get_config()
+    discord_enabled = (hasattr(args, 'output') and args.output and 
+                      cfg.integration.DISCORD_ENABLED and 
+                      not (hasattr(args, 'no_discord') and args.no_discord))
+    
+    if discord_enabled:
+        discord = DiscordIntegration()
+        if discord.is_configured() and cfg.integration.DISCORD_SEND_START:
+            discord.send_race_start()
+    
     # Setup pygame in headless mode before importing pygame
     import os
     os.environ["SDL_VIDEODRIVER"] = "dummy"
     import pygame
     simulation = SimulationManager()
-    cfg = get_config()
     dt = cfg.simulation.FIXED_TIMESTEP
     frames = 0
     start_time = time.time()
@@ -236,6 +259,31 @@ def run_headless_mode(args=None):
     if video_recorder:
         video_recorder.save()
 
-    # Save results if args provided
+    # Save results and handle Discord notifications if needed
     if args is not None and simulation.get_winner() is not None:
-        _save_simulation_results(args, simulation.simulation_time, simulation.get_winner(), simulation)
+        results_filepath = _save_simulation_results(args, simulation.simulation_time, simulation.get_winner(), simulation)
+        
+        # Handle Discord notifications if output was enabled
+        if hasattr(args, 'output') and args.output and discord and discord.is_configured():
+            # Load the results for Discord posting
+            results_manager = ResultsManager()
+            results_data = results_manager.get_latest_results()
+            
+            if results_data:
+                # Send completion notification with video if available
+                if cfg.integration.DISCORD_SEND_COMPLETE and video_recorder:
+                    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'output'))
+                    mp4_files = [f for f in os.listdir(output_dir) if f.lower().endswith('.mp4')]
+                    if mp4_files:
+                        mp4_files.sort()
+                        video_path = os.path.join(output_dir, mp4_files[0])
+                        discord.send_race_complete_with_video(video_path, results_data)
+                
+                # Send winner announcement (with delay)
+                if cfg.integration.DISCORD_SEND_WINNER:
+                    discord.send_winner_announcement(results_data)
+                
+                # Clean up videos if configured
+                if cfg.integration.DISCORD_CLEANUP_VIDEOS:
+                    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'output'))
+                    discord.cleanup_videos(output_dir)

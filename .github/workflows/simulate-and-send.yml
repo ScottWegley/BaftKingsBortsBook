@@ -1,10 +1,13 @@
 name: Simulate and Send Discord Notification
 
+# Note: Discord notifications are now integrated into the main program when using --output
+# Use --no-discord flag to disable Discord notifications if needed
+
 on:
   workflow_dispatch:
     inputs:
       simulation_command:
-        description: 'python -u src/main.py --canon --output --headless --rng-mode'
+        description: 'Simulation command - Discord notifications are automatic with --output flag'
         required: false
         default: 'python -u src/main.py --rng-mode date --canon --output --headless'
 
@@ -25,20 +28,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run simulation
+      - name: Run simulation with Discord notifications
         env:
           SDL_AUDIODRIVER: dummy
-          WINNER_REPORT_WEBHOOK_URL: ${{ secrets.WINNER_REPORT_WEBHOOK_URL }}
+          DEV_REPORT_WEBHOOK_URL: ${{ secrets.DEV_REPORT_WEBHOOK_URL }}
         run: |
-          python -u send_race_start.py
           ${{ github.event.inputs.simulation_command }}
-
-      - name: Send Discord notification
-        env:
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-          WINNER_REPORT_WEBHOOK_URL: ${{ secrets.WINNER_REPORT_WEBHOOK_URL }}
-        run: |
-          python -u send_first_output_to_discord.py
 
       - name: Set up GitHub token for pushing
         run: |
