@@ -1,11 +1,11 @@
-name: Daily Race Live
+name: Daily Race Live v2
 
 # Note: Discord notifications are now integrated into the main program when using --output
 # Use --no-discord flag to disable Discord notifications if needed
 
 on:
   schedule:
-    - cron: '30 1 * * *' # 6:30PM PT (Pacific Time is UTC-7, so 1:30 UTC)
+    - cron: '30 0 * * *' # 5:30PM PT (Pacific Time is UTC-7, so 12:30 UTC)
   workflow_dispatch:
     inputs:
       simulation_command:
